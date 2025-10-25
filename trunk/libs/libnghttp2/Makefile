@@ -1,6 +1,6 @@
 # https://github.com/nghttp2/nghttp2
 
-SRC_VER = 1.67.1
+SRC_VER = 1.68.0
 SRC_NAME = nghttp2-$(SRC_VER)
 SRC_URL = https://github.com/nghttp2/nghttp2/releases/download/v$(SRC_VER)/$(SRC_NAME).tar.xz
 
