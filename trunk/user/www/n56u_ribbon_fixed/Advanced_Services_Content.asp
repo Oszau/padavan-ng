@@ -1033,7 +1033,7 @@ function fillDNSCryptSelect(values) {
 
                                     <table width="100%" cellpadding="4" cellspacing="0" class="table" id="tbl_dnscrypt" style="display:none">
                                         <tr>
-                                            <th colspan="2" style="background-color: #E3E3E3;">Dnscrypt</th>
+                                            <th colspan="2" style="background-color: #E3E3E3;">DNSCrypt</th>
                                         </tr>
                                         <tr id="row_dnscrypt">
                                             <th width="50%"><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this, 25, 1);"><#Adm_Svc_dnscrypt#></a></th>
