@@ -4,11 +4,11 @@
 
 WG="wg"
 IF_NAME="wg0"
-IF_ADDR=$(nvram get vpnc_wg_if_addr)
-IF_MTU=$(nvram get vpnc_wg_mtu)
+IF_ADDR="$(nvram get vpnc_wg_if_addr | tr -s ' ,' '\n')"
+IF_MTU="$(nvram get vpnc_wg_mtu)"
 [ "$IF_MTU" ] || IF_MTU=1420
-IF_PRIVATE=$(nvram get vpnc_wg_if_private)
-IF_PRESHARED=$(nvram get vpnc_wg_if_preshared)
+IF_PRIVATE="$(nvram get vpnc_wg_if_private)"
+IF_PRESHARED="$(nvram get vpnc_wg_if_preshared)"
 IF_DNS="$(nvram get vpnc_wg_if_dns | tr -s ',' ' ')"
 
 unset DEFAULT
@@ -16,10 +16,10 @@ unset DEFAULT
 
 PID_WATCHDOG="/var/run/wg_watchdog.pid"
 
-PEER_PUBLIC=$(nvram get vpnc_wg_peer_public)
-PEER_PORT=$(nvram get vpnc_wg_peer_port)
+PEER_PUBLIC="$(nvram get vpnc_wg_peer_public)"
+PEER_PORT="$(nvram get vpnc_wg_peer_port)"
 PEER_ENDPOINT="$(nvram get vpnc_wg_peer_endpoint)${PEER_PORT:+":$PEER_PORT"}"
-PEER_KEEPALIVE=$(nvram get vpnc_wg_peer_keepalive)
+PEER_KEEPALIVE="$(nvram get vpnc_wg_peer_keepalive)"
 PEER_ALLOWEDIPS="$(nvram get vpnc_wg_peer_allowedips | tr -d ' ')"
 POST_SCRIPT="/etc/storage/vpnc_post_script.sh"
 
@@ -187,7 +187,7 @@ wg_if_init()
     ip link add dev $IF_NAME type wireguard 2>/dev/null || error "cannot create $IF_NAME"
     ip link set dev $IF_NAME mtu $IF_MTU
 
-    for i in $(echo "$IF_ADDR" | tr ',' '\n'); do
+    for i in $IF_ADDR; do
         p=4; [ "$i" != "${i#*:}" ] && p=6
         ip -$p addr add "$i" dev $IF_NAME 2>/dev/null || log "warning: cannot set $IF_NAME address $i"
     done
@@ -383,8 +383,8 @@ ipset_create()
 
     [ -n "$IPSET" ] || return
 
-    ipset -q -N $DNSMASQ_IPSET nethash timeout 3600 \
-        && log "ipset '$DNSMASQ_IPSET' with timeout 3600 created successfully"
+    ipset -q -N $DNSMASQ_IPSET nethash timeout 21600 \
+        && log "ipset '$DNSMASQ_IPSET' with timeout 21600 created successfully"
 
     ipset_load "list" "$VPN_REMOTE_IPSET" "$REMOTE_NETWORK_LIST"
     ipset_load "list" "$VPN_EXCLUDE_IPSET" "$EXCLUDE_NETWORK_LIST"
