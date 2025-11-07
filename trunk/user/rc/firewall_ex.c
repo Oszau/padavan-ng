@@ -2183,6 +2183,20 @@ ipt_nat_default(void)
 }
 
 void
+restore_app_rules(void)
+{
+#if defined(APP_ZAPRET)
+	reload_zapret();
+#endif
+#if defined(APP_WIREGUARD)
+	update_wireguard_client();
+#endif
+#if defined(APP_TOR)
+	update_tor();
+#endif
+}
+
+void
 start_firewall_ex(void)
 {
 	int unit, wan_proto, i_tcp_mss, i_use_man, i_rp;
@@ -2257,6 +2271,8 @@ start_firewall_ex(void)
 	ip6t_filter_rules(man_if, wan_if, lan_if, logaccept, logdrop, i_tcp_mss);
 #endif
 
+	restore_app_rules();
+
 	if (check_if_file_exist(int_iptables_script))
 		doSystem("%s", int_iptables_script);
 
@@ -2273,4 +2289,3 @@ start_firewall_ex(void)
 	module_smart_unload("iptable_mangle", 0);
 	module_smart_unload("ip6table_mangle", 0);
 }
-

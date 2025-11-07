@@ -807,16 +807,6 @@ restart_firewall(void)
 
 	/* update UPnP forwards from lease file */
 	update_upnp();
-
-#if defined(APP_ZAPRET)
-        reload_zapret();
-#endif
-#if defined(APP_WIREGUARD)
-        update_wireguard_client();
-#endif
-#if defined(APP_TOR)
-        update_tor();
-#endif
 }
 
 void
@@ -966,4 +956,3 @@ set_libc_gai(int ipv4_first)
 		unlink("/etc/gai.conf");
 	}
 }
-
