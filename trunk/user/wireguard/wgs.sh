@@ -2,6 +2,10 @@
 
 ###
 
+MODULE="wireguard"
+[ -d "/lib/modules/3.4.113/kernel/net/amneziawg" ] \
+    && MODULE="amneziawg"
+
 WG="wg"
 IF_NAME="wg1"
 IF_ADDR="$(nvram get vpns_vnet | sed 's/\.0$/.1/')"
@@ -35,7 +39,7 @@ log()
 {
     [ -n "$*" ] || return
     echo "$@"
-    logger -t wireguard "$@"
+    logger -t $MODULE "$@"
 }
 
 error()
@@ -131,7 +135,7 @@ EOF
 
 wg_prepare()
 {
-    modprobe -q wireguard >/dev/null 2>&1
+    modprobe -q $MODULE >/dev/null 2>&1
 }
 
 wg_stop()
@@ -146,7 +150,7 @@ wg_start()
     is_started && die "already started"
     wg_prepare
 
-    ip link add dev $IF_NAME type wireguard || error "cannot create $IF_NAME"
+    ip link add dev $IF_NAME type $MODULE || error "cannot create $IF_NAME"
     ip link set dev $IF_NAME mtu $IF_MTU
     ip addr add ${IF_ADDR}/24 dev $IF_NAME
 

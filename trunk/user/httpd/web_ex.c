@@ -2100,6 +2100,11 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 #else
 	int found_app_wg = 0;
 #endif
+#if defined(APP_AMNEZIAWG)
+	int found_app_awg = 1;
+#else
+	int found_app_awg = 0;
+#endif
 #if defined(APP_MINIDLNA)
 	int found_app_dlna = 1;
 #else
@@ -2347,6 +2352,7 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 		"function found_utl_hdparm() { return %d;}\n"
 		"function found_app_ovpn() { return %d;}\n"
 		"function found_app_wg() { return %d;}\n"
+		"function found_app_awg() { return %d;}\n"
 		"function found_app_dlna() { return %d;}\n"
 		"function found_app_ffly() { return %d;}\n"
 		"function found_app_torr() { return %d;}\n"
@@ -2372,6 +2378,7 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 		found_utl_hdparm,
 		found_app_ovpn,
 		found_app_wg,
+		found_app_awg,
 		found_app_dlna,
 		found_app_ffly,
 		found_app_trmd,

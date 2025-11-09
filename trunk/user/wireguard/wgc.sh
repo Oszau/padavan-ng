@@ -2,6 +2,10 @@
 
 ###
 
+MODULE="wireguard"
+[ -d "/lib/modules/3.4.113/kernel/net/amneziawg" ] \
+    && MODULE="amneziawg"
+
 WG="wg"
 IF_NAME="wg0"
 IF_ADDR="$(nvram get vpnc_wg_if_addr | tr -s ' ,' '\n')"
@@ -53,7 +57,7 @@ log()
 {
     [ -n "$*" ] || return
     echo "$@"
-    logger -t wireguard "$@"
+    logger -t $MODULE "$@"
 }
 
 error()
@@ -76,7 +80,8 @@ is_started()
 
 prepare_wg()
 {
-    modprobe -q wireguard
+    modprobe -q $MODULE
+
     sysctl -q net.ipv4.conf.all.src_valid_mark=1
     sysctl -q net.ipv6.conf.all.disable_ipv6=0 2>/dev/null
     sysctl -q net.ipv6.conf.all.forwarding=1 2>/dev/null
@@ -98,10 +103,26 @@ setconf_wg()
         PEER_ALLOWEDIPS=$(echo "$PEER_ALLOWEDIPS" | tr -s ',' '\n' | grep -v ':' | tr -s '\n' ',' | sed 's/,$//')
     fi
 
+    local awg
+    [ "$MODULE" = "amneziawg" ] && awg="
+S1 = 0
+S2 = 0
+Jc = 4
+Jmin = 33
+Jmax = 66
+H1 = 1
+H2 = 2
+H3 = 3
+H4 = 4
+# quic vk.com
+I1 = <b 0xc3000000010870ac9c05f49d2bff0341d26000421578ace2b50e80d3a3e8b2c2e2e5f50aebf6f7364c9fbed6be8c14606445db7e5c0f75b825ffc3d872b3c463422f0c6334b45a1d1297ee2abda6150110864de45ade52b8a2e33a7c4db399678ccb0501ce14696ae1de40c350293d31db073976e3eae493500358df59b6e16867d4c39ff670168bf0ab50e43aa0fc0814c0762227ff93f334522d9562142dcdef7241b554bfe2c27a3ab066d516f4d31a47526318c644e15d90e98899e25c0ce8a67e14df149769c3d14833d27a25e25fde8afd68f587cc573e8c88e502793b50626f4c5267a5786b2903172a0ef4eea2fa282a02e3d3385d598baa9cacb9395d6c43c5ccbbdce9845a39ded847779f00c44cf5df34f3ad2a22e63504316b748eabacb3b03a1cc3df9c8d6ab60a0255b7f8d433d6d0a671b5cf30a0af2c04a7138cc1b264382e164ebbbcc290176ac9d6672e57cac55effa9df991a0ec1b4ed63910432ff03b187c3a22206c6a4914e16d59e36f011a08f03f3ac7baed06a884f9fa3ee84ab2d097d4863f84edc87b624ca9aeafcec920339d3addc7b5fae21e59cc47c58147b244300ad857e71b8cb9772c4fed8a7a775744f0d8448c70a491e3a7fa5a98c0997be9319a32495011cafb4c2f9b3ade1ef1a5efbc00dd7374e5ea0226d62934a2847c55c0d524337d4073557e96b9ff177414ef03945503fb7c6149db4c3f4a449e70363fe259360de0df0d194f43a44dd364acadb6683262927e1b3dbcbb8e8a610ab>
+"
+
     cat > "/tmp/${IF_NAME}.conf.$$" <<EOF
 [Interface]
 PrivateKey = $IF_PRIVATE
 FwMark = $FWMARK
+$awg
 
 [Peer]
 PublicKey = $PEER_PUBLIC
@@ -187,7 +208,7 @@ wg_if_init()
 
     prepare_wg
 
-    ip link add dev $IF_NAME type wireguard 2>/dev/null || error "cannot create $IF_NAME"
+    ip link add dev $IF_NAME type $MODULE 2>/dev/null || error "cannot create $IF_NAME"
     ip link set dev $IF_NAME mtu $IF_MTU
 
     for i in $IF_ADDR; do
@@ -243,7 +264,7 @@ check_connected()
     is_started || die
 
     lh=$(get_latest_handshakes)
-    [ "$lh" ] || die
+    [ "$lh" ] || error "no peer in config"
     [ "$lh" -eq 0 ] && return 1
 
     now=$(date +%s)
