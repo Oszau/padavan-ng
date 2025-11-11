@@ -67,8 +67,13 @@ function initial(){
 			o.remove(2);
 		}
 	}
-	if (!found_app_wg())
+
+	if (!found_app_wg()) {
 		$j("#vpns_type option[value='3']").remove();
+	} else {
+		if (found_app_awg())
+			$j("#vpns_type option[value='3']").html('AmneziaWG');
+	}
 
 	if (openssl_util_found() && login_safe()) {
 		if (!support_openssl_ec()) {
