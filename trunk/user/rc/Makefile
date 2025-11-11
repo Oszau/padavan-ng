@@ -33,7 +33,7 @@ OBJS += vpn_server.o vpn_client.o
 ifeq ($(CONFIG_FIRMWARE_INCLUDE_OPENVPN),y)
 OBJS += vpn_openvpn.o
 endif
-ifeq ($(CONFIG_FIRMWARE_INCLUDE_WIREGUARD),y)
+ifneq (,$(filter y,$(CONFIG_FIRMWARE_INCLUDE_WIREGUARD) $(CONFIG_FIRMWARE_INCLUDE_AMNEZIAWG)))
 OBJS += vpn_wireguard.o
 endif
 ifeq ($(STORAGE_ENABLED),y)
