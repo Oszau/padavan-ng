@@ -85,8 +85,9 @@ HTTPTunnelPort ${LAN_IP}:8181
 NotSaveMicrodescs 1
 
 # TrackHostExits .
+DormantTimeoutEnabled 0
 NumEntryGuards 8
-NewCircuitPeriod 15
+NewCircuitPeriod 30
 LongLivedPorts 80,443
 DormantCanceledByStartup 1
 MaxCircuitDirtiness 120

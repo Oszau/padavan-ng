@@ -2,7 +2,7 @@
 # https://gitlab.torproject.org/tpo/core/tor
 # https://deb.torproject.org/torproject.org/pool/main/t/tor
 
-SRC_NAME = tor-0.4.8.19
+SRC_NAME = tor-0.4.8.20
 SRC_URL = https://dist.torproject.org/$(SRC_NAME).tar.gz
 
 CFLAGS += $(COPT) -ffunction-sections -fdata-sections -fvisibility=hidden
