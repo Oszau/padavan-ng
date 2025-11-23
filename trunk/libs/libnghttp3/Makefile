@@ -1,6 +1,6 @@
 # https://github.com/ngtcp2/nghttp3
 
-SRC_VER = 1.12.0
+SRC_VER = 1.13.0
 SRC_NAME = nghttp3-$(SRC_VER)
 SRC_URL = https://github.com/ngtcp2/nghttp3/releases/download/v$(SRC_VER)/$(SRC_NAME).tar.xz
 
