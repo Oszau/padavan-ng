@@ -62,7 +62,7 @@ die()
 is_started()
 {
     [ -z "$(pidof $(basename "$TOR_BIN"))" ] && return 1
-    [ "$PID_FILE" ]
+    [ -f "$PID_FILE" ]
 }
 
 func_create_config()
