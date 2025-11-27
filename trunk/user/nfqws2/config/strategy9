@@ -23,7 +23,7 @@
 <HOSTLIST_NOAUTO>
 
 ### wireguard, discord, telegram
---new --filter-l7=wireguard,stun,discord
+--new --filter-udp=* --filter-l7=wireguard,stun,discord
 --payload=wireguard_initiation,wireguard_cookie,stun_binding_req,discord_ip_discovery
 --out-range=-d3
 --lua-desync=fake:blob=quic_google:repeats=6

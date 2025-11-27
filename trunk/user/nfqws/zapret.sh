@@ -38,6 +38,9 @@ HOSTLIST="
   --hostlist=/tmp/filter.list
 "
 
+unset IPSET
+[ -x "/sbin/ipset" ] && IPSET=1
+
 ###
 
 log()
@@ -72,9 +75,42 @@ isp_is_present()
     [ "$(echo "$ISP_IF" | tr -d ' ,\n')" ]
 }
 
+ipset_create_exclude()
+{
+    [ -n "$IPSET" ] || return
+
+    ipset -q -X nozapret$1
+    ipset -q -N nozapret$1 nethash family inet$1
+
+    local i
+    if [ -n "$1" ]; then
+        for i in ::1 fc00::/7 fe80::/10
+        do
+            ipset add nozapret$1 $i
+        done
+    else
+        for i in \
+            127.0.0.0/8 169.254.0.0/16 100.64.0.0/10 \
+            198.18.0.0/15 192.88.99.0/24 192.0.0.0/24 \
+            192.0.2.0/24 198.51.100.0/24 203.0.113.0/24 \
+            224.0.0.0/4 240.0.0.0/4 \
+            192.168.0.0/16 10.0.0.0/8
+        do
+            ipset add nozapret $i
+        done
+    fi
+}
+
+ipset_exclude()
+{
+    [ -n "$IPSET" ] || return
+
+    echo "-m set ! --match-set nozapret$1 $2"
+}
+
 _mangle_rules()
 {
-    local i filter
+    local i j filter
 
     # enable only for ipv4
     # $1 = "6" - sign that it is ipv6
@@ -88,14 +124,15 @@ _mangle_rules()
     fi
 
     local rule_nfqueue="-j NFQUEUE --queue-num $NFQUEUE_NUM --queue-bypass"
-    local rule_pre_end="-m connbytes --connbytes 1:3 --connbytes-mode packets --connbytes-dir reply $rule_nfqueue"
-    local rule_post_end="$filter -m mark ! --mark $DESYNC_MARK/$DESYNC_MARK -m connbytes --connbytes 1:9 --connbytes-mode packets --connbytes-dir original $rule_nfqueue"
+    local rule_pre_filter="$(ipset_exclude "$1" src) -m connbytes --connbytes 1:3 --connbytes-mode packets --connbytes-dir reply $rule_nfqueue"
+    local rule_post_filter="$filter $(ipset_exclude "$1" dst) -m mark ! --mark $DESYNC_MARK/$DESYNC_MARK -m connbytes --connbytes 1:9 --connbytes-mode packets --connbytes-dir original $rule_nfqueue"
 
     for i in $ISP_IF; do
-        echo "-A PREROUTING -i $i -p tcp -m multiport --sports 443,80 $rule_pre_end"
-        echo "-A PREROUTING -i $i -p udp -m multiport --sports 443 $rule_pre_end"
-        echo "-A POSTROUTING -o $i -p tcp $rule_post_end"
-        echo "-A POSTROUTING -o $i -p udp $rule_post_end"
+        for j in tcp udp; do
+            echo "-A INPUT -i $i -p $j -m multiport --sports 443,80 $rule_pre_filter"
+            echo "-A FORWARD -i $i -p $j -m multiport --sports 443,80 $rule_pre_filter"
+            echo "-A POSTROUTING -o $i -p $j $rule_post_filter"
+        done
     done
 }
 
@@ -164,7 +201,9 @@ firewall_stop()
 iptables_start()
 {
     local i
+
     for i in "" $([ -d /proc/sys/net/ipv6 ] && echo 6); do
+        ipset_create_exclude $i
         ip${i}tables-restore -n <<EOF
 *mangle
 $(_mangle_rules $i)
