@@ -170,14 +170,14 @@ replace_str()
 
 startup_args()
 {
-    local args="--user=$USER --qnum=$NFQUEUE_NUM"
-    [ "$LOG_LEVEL" = "1" ] && args="--debug=syslog $args"
+    local debug="@/dev/null"
+    [ "$LOG_LEVEL" = "1" ] && debug="syslog"
 
     local strategy="$(grep -v '^#' "$STRATEGY_FILE" | tr -d '"')"
     strategy=$(replace_str "$HOSTLIST_MARKER" "$HOSTLIST" "$strategy")
     strategy=$(replace_str "$HOSTLIST_NOAUTO_MARKER" "$HOSTLIST_NOAUTO" "$strategy")
 
-    echo "$args $strategy"
+    echo "--user=$USER --debug=$debug --qnum=$NFQUEUE_NUM $strategy"
 }
 
 iptables_stop()
