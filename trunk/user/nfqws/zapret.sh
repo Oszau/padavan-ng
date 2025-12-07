@@ -170,14 +170,18 @@ replace_str()
 
 startup_args()
 {
-    local debug="0"
-    [ "$LOG_LEVEL" = "1" ] && debug="syslog"
+    echo "--user=$USER --qnum=$NFQUEUE_NUM"
+    [ "$LOG_LEVEL" = "1" ] && echo "--debug=syslog"
+
+    [ -n "$NFQWS_VER" ] && \
+        echo "--lua-init=@/usr/share/zapret/lua/zapret-lib.lua
+              --lua-init=@/usr/share/zapret/lua/zapret-antidpi.lua
+              --lua-init=@/usr/share/zapret/lua/zapret-auto.lua"
 
     local strategy="$(grep -v '^#' "$STRATEGY_FILE" | tr -d '"')"
     strategy=$(replace_str "$HOSTLIST_MARKER" "$HOSTLIST" "$strategy")
     strategy=$(replace_str "$HOSTLIST_NOAUTO_MARKER" "$HOSTLIST_NOAUTO" "$strategy")
-
-    echo "--user=$USER --debug=$debug --qnum=$NFQUEUE_NUM $strategy"
+    echo "$strategy"
 }
 
 iptables_stop()
@@ -427,7 +431,7 @@ set_strategy_file "$2"
 
 # nfqws2 support
 unset NFQWS_VER
-grep -q "lua-init" "$STRATEGY_FILE" && NFQWS_VER=2
+grep -q "[-][-]lua-desync" "$STRATEGY_FILE" && NFQWS_VER=2
 
 [ -x "${NFQWS_BIN}${NFQWS_VER}" ] && NFQWS_BIN="${NFQWS_BIN}${NFQWS_VER}"
 [ -x "$NFQWS_BIN_OPT${NFQWS_VER}" ] && NFQWS_BIN="$NFQWS_BIN_OPT${NFQWS_VER}"
