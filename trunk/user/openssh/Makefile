@@ -1,12 +1,25 @@
-SRC_NAME=openssh-8.x
+# https://www.openssh.org
+# https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/openssh/1:9.6p1-3ubuntu13.14/openssh_9.6p1-3ubuntu13.14.debian.tar.xz
+
+SRC_NAME = openssh-9.6p1
+SRC_URL = https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/$(SRC_NAME).tar.gz
 
 CFLAGS += -ffunction-sections -fdata-sections
 LDFLAGS += -Wl,--gc-sections
 
-THISDIR = $(shell pwd)
-
-all: config_test
+all: download_test extract_test config_test
 	$(MAKE) -j$(HOST_NCPU) -C $(SRC_NAME)
+
+download_test:
+	( if [ ! -f $(SRC_NAME).tar.gz ]; then \
+		wget -t5 -T20 --no-check-certificate -O $(SRC_NAME).tar.gz $(SRC_URL) || rm -f $(SRC_NAME).tar.gz; \
+	fi )
+
+extract_test:
+	( if [ ! -d $(SRC_NAME) ]; then \
+		tar xf $(SRC_NAME).tar.gz; \
+		cat patches/*.patch | patch -d $(SRC_NAME) -r - -N -p1; \
+	fi )
 
 config_test:
 	( if [ -f ./config_done ]; then \
@@ -51,15 +64,12 @@ clean:
 
 romfs:
 ifeq ($(CONFIG_FIRMWARE_INCLUDE_OPENSSH),y)
-	mkdir -p $(INSTALLDIR)/etc_ro/ssh
-	$(ROMFSINST) $(THISDIR)/$(SRC_NAME)/moduli /etc_ro/ssh/moduli
-	$(ROMFSINST) $(THISDIR)/$(SRC_NAME)/libssh.so /lib/libssh.so
-	$(ROMFSINST) $(THISDIR)/$(SRC_NAME)/scp /usr/bin/scp
-	$(ROMFSINST) $(THISDIR)/$(SRC_NAME)/ssh /usr/bin/ssh
-	$(ROMFSINST) $(THISDIR)/$(SRC_NAME)/ssh-keygen /usr/bin/ssh-keygen
-	$(ROMFSINST) $(THISDIR)/$(SRC_NAME)/sshd /usr/sbin/sshd
+	$(ROMFSINST) -d $(SRC_NAME)/moduli /etc_ro/ssh/moduli
+	$(ROMFSINST) $(SRC_NAME)/libssh.so /lib/libssh.so
+	$(ROMFSINST) $(SRC_NAME)/scp /usr/bin/scp
+	$(ROMFSINST) $(SRC_NAME)/ssh /usr/bin/ssh
+	$(ROMFSINST) $(SRC_NAME)/ssh-keygen /usr/bin/ssh-keygen
+	$(ROMFSINST) $(SRC_NAME)/sshd /usr/sbin/sshd
 	$(ROMFSINST) -p +x /usr/bin/sshd.sh
 endif
-
-	mkdir -p $(INSTALLDIR)/usr/libexec
-	$(ROMFSINST) $(THISDIR)/$(SRC_NAME)/sftp-server /usr/libexec/sftp-server
+	$(ROMFSINST) -d $(SRC_NAME)/sftp-server /usr/libexec/sftp-server
