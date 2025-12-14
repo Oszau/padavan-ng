@@ -70,67 +70,6 @@ isp_is_present()
     [ "$(echo "$ISP_IF" | tr -d ' ,\n')" ]
 }
 
-ipset_create_exclude()
-{
-    [ -n "$IPSET" ] || return
-
-    ipset -q -X nozapret$1
-    ipset -q -N nozapret$1 nethash family inet$1
-
-    local i
-    if [ -n "$1" ]; then
-        for i in ::1 fc00::/7 fe80::/10
-        do
-            ipset add nozapret$1 $i
-        done
-    else
-        for i in \
-            127.0.0.0/8 169.254.0.0/16 100.64.0.0/10 \
-            198.18.0.0/15 192.88.99.0/24 192.0.0.0/24 \
-            192.0.2.0/24 198.51.100.0/24 203.0.113.0/24 \
-            192.168.0.0/16 10.0.0.0/8 172.16.0.0/12 \
-            224.0.0.0/4 240.0.0.0/4
-        do
-            ipset add nozapret $i
-        done
-    fi
-}
-
-ipset_exclude()
-{
-    [ -n "$IPSET" ] || return
-
-    echo "-m set ! --match-set nozapret$1 $2"
-}
-
-set_fw_rules()
-{
-    local iface proto filter
-
-    # enable only for ipv4
-    # $1 = "6" - sign that it is ipv6
-    if [ "$CLIENTS_ALLOWED" -a ! "$1" ]; then
-        filter="-m mark --mark $FILTER_MARK/$FILTER_MARK"
-
-        echo "-A OUTPUT -j MARK --or-mark $FILTER_MARK"
-        for i in $CLIENTS_ALLOWED; do
-            echo "-A PREROUTING -s $i -j MARK --or-mark $FILTER_MARK"
-        done
-    fi
-
-    local rule_nfqueue="-j NFQUEUE --queue-num $NFQUEUE_NUM --queue-bypass"
-    local rule_pre_filter="-m connbytes --connbytes 1:3 --connbytes-mode packets --connbytes-dir reply $rule_nfqueue"
-    local rule_post_filter="$filter $(ipset_exclude "$1" dst) -m mark ! --mark $DESYNC_MARK/$DESYNC_MARK -m connbytes --connbytes 1:9 --connbytes-mode packets --connbytes-dir original $rule_nfqueue"
-
-    for iface in $ISP_IF; do
-        for proto in tcp udp; do
-            echo "-A INPUT -i $iface -p $proto -m multiport --sports 443,80 $rule_pre_filter"
-            echo "-A FORWARD -i $iface -p $proto -m multiport --sports 443,80 $rule_pre_filter"
-            echo "-A POSTROUTING -o $iface -p $proto $rule_post_filter"
-        done
-    done
-}
-
 is_running()
 {
     [ -f "$PID_FILE" ]
@@ -179,14 +118,95 @@ startup_args()
     echo "$strategy"
 }
 
+ipset_create_exclude()
+{
+    [ -n "$IPSET" ] || return
+
+    ipset -q destroy nozapret$1
+    ipset -q create nozapret$1 nethash family inet$1
+
+    local i
+    if [ -n "$1" ]; then
+        for i in ::1 fc00::/7 fe80::/10
+        do
+            ipset -q add nozapret$1 $i
+        done
+    else
+        for i in \
+            127.0.0.0/8 169.254.0.0/16 100.64.0.0/10 \
+            198.18.0.0/15 192.88.99.0/24 192.0.0.0/24 \
+            192.0.2.0/24 198.51.100.0/24 203.0.113.0/24 \
+            192.168.0.0/16 10.0.0.0/8 172.16.0.0/12 \
+            224.0.0.0/4 240.0.0.0/4
+        do
+            ipset -q add nozapret $i
+        done
+    fi
+}
+
+ipset_exclude()
+{
+    [ -n "$IPSET" ] || return
+
+    echo "-m set ! --match-set nozapret$1 $2"
+}
+
+set_chain_rules()
+{
+    local i filter
+    local jnfq="-j NFQUEUE --queue-num $NFQUEUE_NUM --queue-bypass"
+    local check_mark="-m mark ! --mark $DESYNC_MARK/$DESYNC_MARK"
+
+    # enable only for ipv4
+    # $1 = "6" - sign that it is ipv6
+    if [ "$CLIENTS_ALLOWED" -a ! "$1" ]; then
+        filter="-m mark --mark $FILTER_MARK/$FILTER_MARK"
+
+        echo "-A zapret_out -j MARK --or-mark $FILTER_MARK"
+        for i in $CLIENTS_ALLOWED; do
+            echo "-A zapret_clients -s $i -j MARK --or-mark $FILTER_MARK"
+        done
+    fi
+
+    for i in $ISP_IF; do
+        echo "-A zapret_pre -i $i $(ipset_exclude "$1" src) $jnfq"
+        echo "-A zapret_post -o $i $check_mark $filter $(ipset_exclude "$1" dst) $jnfq"
+    done
+}
+
+set_fw_rules()
+{
+    local cb_orig="-m connbytes --connbytes-dir=original --connbytes-mode=packets --connbytes 1:9"
+    local cb_reply="-m connbytes --connbytes-dir=reply --connbytes-mode=packets --connbytes 1:3"
+
+    echo "
+-$1 PREROUTING -j zapret_clients
+-$1 OUTPUT -j zapret_out
+-$1 INPUT -p tcp $cb_reply -m multiport --sports 80,443 -j zapret_pre
+-$1 INPUT -p udp $cb_reply -m multiport --sports 443 -j zapret_pre
+-$1 FORWARD -p tcp $cb_reply -m multiport --sports 80,443 -j zapret_pre
+-$1 FORWARD -p udp $cb_reply -m multiport --sports 443 -j zapret_pre
+-$1 POSTROUTING -p tcp $cb_orig -j zapret_post
+-$1 POSTROUTING -p udp $cb_orig -j zapret_post
+"
+}
+
 iptables_stop()
 {
     local i
 
     for i in "" $([ -d /proc/sys/net/ipv6 ] && echo 6); do
-        ip${i}tables-restore -n <<EOF
+        ip${i}tables-restore -n 2>/dev/null <<EOF
 *mangle
-$(ip${i}tables-save -t mangle 2>/dev/null | sed -n "/\(queue-bypass\|mark $DESYNC_MARK\/$DESYNC_MARK\|mark $FILTER_MARK\/$FILTER_MARK\)/{s/^-A/-D/p}")
+$(set_fw_rules D)
+-F zapret_pre
+-F zapret_post
+-F zapret_out
+-F zapret_clients
+-X zapret_pre
+-X zapret_post
+-X zapret_out
+-X zapret_clients
 COMMIT
 EOF
     done
@@ -205,7 +225,12 @@ iptables_start()
         ipset_create_exclude $i
         ip${i}tables-restore -n <<EOF
 *mangle
-$(set_fw_rules $i)
+:zapret_pre - [0:0]
+:zapret_post - [0:0]
+:zapret_out - [0:0]
+:zapret_clients - [0:0]
+$(set_fw_rules A)
+$(set_chain_rules $i)
 COMMIT
 EOF
     done
