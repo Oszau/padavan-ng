@@ -1098,7 +1098,9 @@ watchdog_on_timer(void)
 	/* DNS/DHCP server check */
 	if (!is_ap_mode) {
 		dnsmasq_process_check();
+#if defined (APP_WIREGUARD)
 		watchdog_wireguard_client();
+#endif
 	}
 
 	inet_handler(is_ap_mode);
