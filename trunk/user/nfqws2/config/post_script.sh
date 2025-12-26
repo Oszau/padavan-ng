@@ -5,7 +5,7 @@
 ###
 ### $DESYNC_MARK     - mark of processed packages, default 0x40000000
 ### $FILTER_MARK     - mark allowed clients, default 0x10000000
-### $CLIENTS_ALLOWED - ip list allowed clients, comma separated
+### $CLIENTS_ALLOWED - ip list allowed clients, space separated
 ### $NFQUEUE_NUM     - queue number of current desync strategy
 ### $ISP_IF          - list of WAN interfaces separated by line breaks
 ### $NFQWS_BIN       - nfqws binary

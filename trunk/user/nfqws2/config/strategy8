@@ -20,6 +20,6 @@
 
 ### wireguard, discord, telegram
 --new --filter-udp=* --filter-l7=wireguard,stun,discord,mtproto
---payload=wireguard_initiation,wireguard_cookie,stun,discord_ip_discovery,mtproto_initial
 --out-range=-d3
+--payload=wireguard_initiation,wireguard_response,wireguard_cookie,stun,discord_ip_discovery,mtproto_initial
 --lua-desync=fake:blob=quic_google:repeats=6
