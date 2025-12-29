@@ -18,8 +18,13 @@
 --payload=quic_initial
 --lua-desync=fake:blob=quic_google:repeats=6
 
+### games
+--new --filter-udp=21000-21500,49152-65535
+--out-range=-n1
+--lua-desync=fake:blob=quic_google:payload=~empty:ip_autottl=2:repeats=6
+
 ### wireguard, discord, telegram
 --new --filter-udp=* --filter-l7=wireguard,stun,discord,mtproto
---out-range=-d3
+--out-range=-n1
 --payload=wireguard_initiation,wireguard_response,wireguard_cookie,stun,discord_ip_discovery,mtproto_initial
 --lua-desync=fake:blob=quic_google:repeats=6

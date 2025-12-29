@@ -9,22 +9,30 @@
 --lua-desync=circular:fails=1:time=300:retrans=3
 --in-range=x
 --payload=tls_client_hello
---lua-desync=hostfakesplit:host=www.ozon.ru:midhost=host-2:seqovl=sniext+3:seqovl_pattern=tls_google:badsum:tcp_md5:tcp_ts_up:strategy=1
---lua-desync=fake:blob=fake_default_tls:tcp_seq=10000:tls_mod=rnd,dupsid,sni=fonts.google.com:strategy=2
---lua-desync=fakeddisorder:pos=1,sniext+1,host+1,midsld-2,midsld,midsld+2,endhost-1:pattern=tls_google:seqovl=821:seqovl_pattern=tls_google:tcp_ack=-66000:tcp_ts_up:strategy=2
+--lua-desync=fake:blob=fake_default_tls:tcp_ts=-1000:strategy=1
+--lua-desync=multidisorder:pos=1,midsld,sniext+1,endhost-2,-10:seqovl=1:seqovl_pattern=tls_google:tcp_ts_up:strategy=1
+--lua-desync=hostfakesplit:host=www.ozon.ru:midhost=host-2:seqovl=sniext+3:seqovl_pattern=tls_google:badsum:tcp_md5:tcp_ts_up:strategy=2
 --lua-desync=fake:blob=fake_default_tls:tcp_seq=10000:tls_mod=rnd,dupsid,sni=fonts.google.com:strategy=3
---lua-desync=multisplit:pos=1,midsld,1220:seqovl=821:seqovl_pattern=tls_google:tcp_ts_up:strategy=3
+--lua-desync=fakeddisorder:pos=1,sniext+1,host+1,midsld-2,midsld,midsld+2,endhost-1:pattern=tls_google:seqovl=821:seqovl_pattern=tls_google:tcp_ack=-66000:tcp_ts_up:strategy=3
+--lua-desync=fake:blob=fake_default_tls:tcp_seq=10000:tls_mod=rnd,dupsid,sni=fonts.google.com:strategy=4
+--lua-desync=multisplit:pos=1,midsld,1220:seqovl=821:seqovl_pattern=tls_google:tcp_ts_up:strategy=4
 --payload=http_req
---lua-desync=hostfakesplit:tcp_md5:tcp_ts_up:strategy=1
---lua-desync=fakeddisorder:pos=midsld+2:badsum:strategy=2
+--lua-desync=http_methodeol:badsum:strategy=1
+--lua-desync=hostfakesplit:tcp_md5:tcp_ts_up:strategy=2
+--lua-desync=fakeddisorder:pos=midsld+2:badsum:strategy=3
 
 ### quic
 --new --filter-udp=443 --filter-l7=quic <HOSTLIST_NOAUTO>
 --payload=quic_initial
 --lua-desync=fake:blob=quic_google:repeats=6
 
+### games
+--new --filter-udp=21000-21500,49152-65535
+--out-range=-n1
+--lua-desync=fake:blob=quic_google:payload=~empty:ip_autottl=2:repeats=6
+
 ### wireguard, discord, telegram
 --new --filter-udp=* --filter-l7=wireguard,stun,discord,mtproto
---out-range=-d3
+--out-range=-n1
 --payload=wireguard_initiation,wireguard_response,wireguard_cookie,stun,discord_ip_discovery,mtproto_initial
 --lua-desync=fake:blob=quic_google:repeats=6
