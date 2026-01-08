@@ -241,9 +241,11 @@ firewall_start()
     firewall_stop
 
     if isp_is_present; then
-        iptables_start
-
-        log "firewall rules updated on interface(s): "$ISP_IF
+        if iptables_start; then
+            log "firewall rules updated on interface(s): "$ISP_IF
+        else
+            log "firewall rules update failed"
+        fi
     else
         log "interfaces not defined, firewall rules not set"
     fi
