@@ -32,10 +32,11 @@ ADDLIB+=dnet_ntop.o dnet_pton.o
 ADDLIB+=ipx_ntop.o ipx_pton.o
 
 HOSTCC = gcc
+CFLAGS := -I../include $(CFLAGS)
 CFLAGS += -Wstrict-prototypes
-CFLAGS += -I../include
 CFLAGS += -D_GNU_SOURCE $(DEFINES)
 CFLAGS += -ffunction-sections -fdata-sections -fvisibility=hidden
+
 YACCFLAGS = -d -t -v
 
 SUBDIRS=lib tc

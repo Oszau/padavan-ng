@@ -1,0 +1,339 @@
+--- iptables-1.8.7.orig/extensions/disabled/libxt_IMQ.c
++++ iptables-1.8.7/extensions/disabled/libxt_IMQ.c
+@@ -0,0 +1,105 @@
++/* Shared library add-on to iptables to add IMQ target support. */
++#include <stdio.h>
++#include <string.h>
++#include <stdlib.h>
++#include <getopt.h>
++
++#include <xtables.h>
++#include <linux/netfilter/x_tables.h>
++#include <linux/netfilter/xt_IMQ.h>
++
++/* Function which prints out usage message. */
++static void IMQ_help(void)
++{
++	printf(
++"IMQ target options:\n"
++"  --todev <N>		enqueue to imq<N>, defaults to 0\n");
++
++}
++
++static struct option IMQ_opts[] = {
++	{ "todev", 1, 0, '1' },
++	{ 0 }
++};
++
++/* Initialize the target. */
++static void IMQ_init(struct xt_entry_target *t)
++{
++	struct xt_imq_info *mr = (struct xt_imq_info*)t->data;
++
++	mr->todev = 0;
++}
++
++/* Function which parses command options; returns true if it
++   ate an option */
++static int IMQ_parse(int c, char **argv, int invert, unsigned int *flags,
++      const void *entry, struct xt_entry_target **target)
++{
++	struct xt_imq_info *mr = (struct xt_imq_info*)(*target)->data;
++	
++	switch(c) {
++	case '1':
++/*		if (xtables_check_inverse(optarg, &invert, NULL, 0, argv))
++			xtables_error(PARAMETER_PROBLEM,
++				   "Unexpected `!' after --todev");
++*/
++		mr->todev=atoi(optarg);
++		break;
++
++	default:
++		return 0;
++	}
++	return 1;
++}
++
++/* Prints out the targinfo. */
++static void IMQ_print(const void *ip,
++      const struct xt_entry_target *target,
++      int numeric)
++{
++	struct xt_imq_info *mr = (struct xt_imq_info*)target->data;
++
++	printf("IMQ: todev %u ", mr->todev);
++}
++
++/* Saves the union ipt_targinfo in parsable form to stdout. */
++static void IMQ_save(const void *ip, const struct xt_entry_target *target)
++{
++	struct xt_imq_info *mr = (struct xt_imq_info*)target->data;
++
++	printf(" --todev %u", mr->todev);
++}
++
++static struct xtables_target imq_target = {
++	.name		= "IMQ",
++	.version	= XTABLES_VERSION,
++	.family		= NFPROTO_IPV4,
++	.size		= XT_ALIGN(sizeof(struct xt_imq_info)),
++	.userspacesize	= XT_ALIGN(sizeof(struct xt_imq_info)),
++	.help		= IMQ_help,
++	.init		= IMQ_init,
++	.parse		= IMQ_parse,
++	.print		= IMQ_print,
++	.save		= IMQ_save,
++	.extra_opts	= IMQ_opts,
++};
++
++static struct xtables_target imq_target6 = {
++	.name		= "IMQ",
++	.version	= XTABLES_VERSION,
++	.family		= NFPROTO_IPV6,
++	.size		= XT_ALIGN(sizeof(struct xt_imq_info)),
++	.userspacesize	= XT_ALIGN(sizeof(struct xt_imq_info)),
++	.help		= IMQ_help,
++	.init		= IMQ_init,
++	.parse		= IMQ_parse,
++	.print		= IMQ_print,
++	.save		= IMQ_save,
++	.extra_opts	= IMQ_opts,
++};
++
++// void __attribute((constructor)) nf_ext_init(void){
++void _init(void){
++	xtables_register_target(&imq_target);
++	xtables_register_target(&imq_target6);
++}
+--- iptables-1.8.7.orig/extensions/disabled/libxt_IMQ.man
++++ iptables-1.8.7/extensions/disabled/libxt_IMQ.man
+@@ -0,0 +1,15 @@
++This target is used to redirect the traffic to the IMQ driver and you can apply
++QoS rules like HTB or CBQ.
++For example you can select only traffic comming from a specific interface or
++is going out on a specific interface.
++Also it permits to capture the traffic BEFORE NAT in the case of outgoing traffic
++or AFTER NAT in the case of incomming traffic.
++.TP
++\fB\-\-to\-dev\fP \fIvalue\fP
++Set the IMQ interface where to send this traffic
++.TP
++Example:
++.TP
++Redirect incomming traffic from interface eth0 to imq0 and outgoing traffic to imq1:
++iptables \-t mangle \-A FORWARD \-i eth0 \-j IMQ \-\-to\-dev 0
++iptables \-t mangle \-A FORWARD \-o eth0 \-j IMQ \-\-to\-dev 1
+--- iptables-1.8.7.orig/extensions/libxt_webstr.c
++++ iptables-1.8.7/extensions/libxt_webstr.c
+@@ -0,0 +1,198 @@
++/* Shared library add-on to iptables to add string matching support..
++ *.
++ * Copyright (C) 2000 Emmanuel Roger  <winfield@freegates.be>
++ *
++ * ChangeLog
++ *     27.01.2001: Gianni Tedesco <gianni@ecsc.co.uk>
++ *             Changed --tos to --string in save(). Also
++ *             updated to work with slightly modified
++ *             xt_string_info.
++ */
++
++/* Shared library add-on to iptables to add webstr matching support. 
++ *
++ * Copyright (C) 2003, CyberTAN Corporation
++ * All Rights Reserved.
++ *
++ * Description:
++ *   This is shared library, added to iptables, for web content inspection. 
++ *   It was derived from 'string' matching support, declared as above.
++ *
++ * ChangeLog
++ *	2009-09-26: Leonid Lisovskiy <lly.dev@gmail.com>
++ *			Fix save() method, minor parse() optimization.
++ */
++
++
++#include <stdio.h>
++#include <netdb.h>
++#include <string.h>
++#include <stdlib.h>
++#include <getopt.h>
++#include <xtables.h>
++
++#define BM_MAX_NLEN 256
++
++#define BLK_JAVA		0x01
++#define BLK_ACTIVE		0x02
++#define BLK_COOKIE		0x04
++#define BLK_PROXY		0x08
++
++struct xt_webstr_info {
++    char string[BM_MAX_NLEN];
++    u_int16_t invert;
++    u_int16_t len;
++    u_int8_t type;
++};
++
++enum xt_webstr_type
++{
++    XT_WEBSTR_HOST,
++    XT_WEBSTR_URL,
++    XT_WEBSTR_CONTENT
++};
++
++
++/* Function which prints out usage message. */
++static void
++webstr_help(void)
++{
++	printf(
++"WEBSTR match v%s options:\n"
++"--host [!] host               Match a http string in a packet\n"
++"--url [!] url                 Match a http string in a packet\n"
++"--content [!] content         Match a http string in a packet\n"
++"\n",
++XTABLES_VERSION);
++}
++
++static struct option webstr_opts[] = {
++	{ "host",    1, 0, '1' },
++	{ "url",     1, 0, '2' },
++	{ "content", 1, 0, '3' },
++	XT_GETOPT_TABLEEND,
++};
++
++/* Initialize the match. */
++static void
++webstr_init(struct xt_entry_match *m)
++{
++}
++
++static void
++parse_string(const unsigned char *s, struct xt_webstr_info *info)
++{
++	if (strlen(s) <= BM_MAX_NLEN) strcpy(info->string, s);
++	else xtables_error(PARAMETER_PROBLEM, "WEBSTR too long `%s'", s);
++}
++
++static int
++webstr_parse(int c, char **argv, int invert, unsigned int *flags,
++             const void *entry, struct xt_entry_match **match)
++{
++	struct xt_webstr_info *stringinfo = (struct xt_webstr_info *)(*match)->data;
++
++	switch (c) {
++	case '1':
++		stringinfo->type = XT_WEBSTR_HOST;
++		break;
++	case '2':
++		stringinfo->type = XT_WEBSTR_URL;
++		break;
++	case '3':
++		stringinfo->type = XT_WEBSTR_CONTENT;
++		break;
++	default:
++		return 0;
++	}
++
++	if (invert)
++		stringinfo->invert = 1;
++	parse_string(argv[optind-1], stringinfo);
++	stringinfo->len=strlen((char *)&stringinfo->string);
++
++	*flags = 1;
++	return 1;
++}
++
++static void
++print_string(char string[], int invert, int numeric)
++{
++	if (invert)
++		fputc('!', stdout);
++	printf("%s ",string);
++}
++
++/* Final check; must have specified --string. */
++static void
++webstr_check(unsigned int flags)
++{
++	if (!flags)
++		xtables_error(PARAMETER_PROBLEM,
++			   "WEBSTR match: You must specify `--webstr'");
++}
++
++static void
++print_type(unsigned type)
++{
++	switch (type) {
++	case XT_WEBSTR_HOST:
++		printf("%s ", webstr_opts[0].name);
++		break;
++
++	case XT_WEBSTR_URL:
++		printf("%s ", webstr_opts[1].name);
++		break;
++
++	case XT_WEBSTR_CONTENT:
++		printf("%s ", webstr_opts[2].name);
++		break;
++
++	default:
++		printf("ERROR ");
++		break;
++	}
++}
++
++/* Prints out the matchinfo. */
++static void
++webstr_print(const void *ip,
++      const struct xt_entry_match *match,
++      int numeric)
++{
++	struct xt_webstr_info *stringinfo = (struct xt_webstr_info *)match->data;
++
++	printf("webstr: ");
++	print_type(stringinfo->type);
++	print_string(stringinfo->string, stringinfo->invert, numeric);
++}
++
++/* Saves the union xt_matchinfo in parsable form to stdout. */
++static void
++webstr_save(const void *ip, const struct xt_entry_match *match)
++{
++	struct xt_webstr_info *stringinfo = (struct xt_webstr_info *)match->data;
++
++	printf(" --"); print_type(stringinfo->type);
++	print_string(stringinfo->string, stringinfo->invert, 0);
++}
++
++static struct xtables_match webstr = { 
++	.family		= NFPROTO_UNSPEC,
++	.name		= "webstr",
++	.version	= XTABLES_VERSION,
++	.size		= XT_ALIGN(sizeof(struct xt_webstr_info)),
++	.userspacesize	= XT_ALIGN(sizeof(struct xt_webstr_info)),
++	.help		= webstr_help,
++	.init		= webstr_init,
++	.print		= webstr_print,
++	.save		= webstr_save,
++	.parse		= webstr_parse,
++	.final_check	= webstr_check,
++	.extra_opts	= webstr_opts
++};
++
++void _init(void)
++{
++	xtables_register_match(&webstr);
++}
+--- iptables-1.8.7.orig/include/linux/netfilter/xt_IMQ.h
++++ iptables-1.8.7/include/linux/netfilter/xt_IMQ.h
+@@ -0,0 +1,9 @@
++#ifndef _XT_IMQ_H
++#define _XT_IMQ_H
++
++struct xt_imq_info {
++	unsigned int todev;     /* target imq device */
++};
++
++#endif /* _XT_IMQ_H */
++
