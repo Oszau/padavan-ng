@@ -1,20 +1,48 @@
-SRC_NAME=miniupnpd-2.X
+# http://miniupnp.free.fr
 
-# reference to iptables package
-IPT_VERSION:=iptables-1.4.16.3
+SRC_NAME = miniupnpd-2.3.9
+SRC_URL = http://miniupnp.free.fr/files/$(SRC_NAME).tar.gz
 
-# disable support IPv6 yet, because no profit w/o IGDv2
-# e.g. Windows not supported IGDv2 and UPnP not worked
-ENABLE_IPV6:=0
+all: download_test extract_test config_test
+	$(MAKE) -C $(SRC_NAME)
 
-IPTABLESPATH=$(ROOTDIR)/user/iptables/$(IPT_VERSION)
+download_test:
+	( if [ ! -f $(SRC_NAME).tar.gz ]; then \
+		wget -t5 -T20 --no-check-certificate -O $(SRC_NAME).tar.gz $(SRC_URL) \
+			|| rm -f $(SRC_NAME).tar.gz; \
+	fi )
 
-all:
-	cd $(SRC_NAME) && ./genconfig.sh
-	$(MAKE) -j$(HOST_NCPU) -f Makefile.linux -C $(SRC_NAME) IPTABLESPATH=$(IPTABLESPATH) ENABLE_IPV6=$(ENABLE_IPV6)
+extract_test:
+	( if [ ! -d $(SRC_NAME) ]; then \
+		tar xf $(SRC_NAME).tar.gz; \
+		cat patches/*.patch | patch -d $(SRC_NAME) -r - -N -p1; \
+	fi )
+
+config_test:
+	( if [ -f ./config_done ]; then \
+		echo "the same configuration"; \
+	else \
+		make configure && touch config_done; \
+	fi )
+
+configure:
+	( cd $(SRC_NAME); \
+	./configure \
+		--firewall=iptables \
+		--vendorcfg \
+		--portinuse \
+		--leasefile \
+		--disable-pppconn \
+		--disable-tests \
+#		$(if $(CONFIG_IPV6),--ipv6) \
+#		--igd2 \
+	)
 
 clean:
-	$(MAKE) -f Makefile.linux -C $(SRC_NAME) clean
+	( if [ -d $(SRC_NAME) ]; then \
+		$(MAKE) -C $(SRC_NAME) clean; \
+	fi )
+	rm -f config_done
 
 romfs:
 	$(ROMFSINST) $(SRC_NAME)/miniupnpd /usr/bin/miniupnpd

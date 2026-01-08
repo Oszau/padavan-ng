@@ -1,0 +1,15 @@
+--- miniupnpd-2.3.9.orig/configure
++++ miniupnpd-2.3.9/configure
+@@ -715,11 +715,7 @@
+ 		;;
+ esac
+ 
+-if [ "$MAKEFILE" = "Makefile.linux" ] || [ "$MAKEFILE" = "Makefile.linux_nft" ] || [ "$MAKEFILE" = "Makefile.macosx" ] ; then
+-	DEFAULT_CONFIG=/etc/miniupnpd/miniupnpd.conf
+-else
+-	DEFAULT_CONFIG=/etc/miniupnpd.conf
+-fi
++DEFAULT_CONFIG=/etc/miniupnpd.conf
+ 
+ if [ "$MAKEFILE" = "Makefile.bsd" ] || [ "$OS_NAME" = "Darwin" ] || [ "$OS_NAME" = "SunOS" ] ; then
+ 	CONFIG_MK=bsdmake.inc

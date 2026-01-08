@@ -1,0 +1,18 @@
+--- miniupnpd-2.3.9.orig/Makefile.linux
++++ miniupnpd-2.3.9/Makefile.linux
+@@ -37,12 +37,13 @@
+ CFLAGS ?= -Os
+ CFLAGS += -fno-strict-aliasing
+ CFLAGS += -fno-common
+-CFLAGS += -fstack-protector -fPIE
++CFLAGS += -fno-stack-protector -fPIE
++CFLAGS += -ffunction-sections -fdata-sections -fvisibility=hidden
+ CFLAGS += -Wall
+ CFLAGS += -Wextra -Wstrict-prototypes -Wdeclaration-after-statement
+ #CFLAGS += -Wno-missing-field-initializers
+ #CFLAGS += -ansi	# iptables headers does use typeof which is a gcc extension
+-LDFLAGS += -Wl,-z,now -Wl,-z,relro -pie
++LDFLAGS += -Wl,-z,now -Wl,-z,relro -Wl,--gc-sections
+ CC ?= gcc
+ RM = rm -f
+ INSTALL = install
