@@ -20,7 +20,6 @@ unset DEFAULT
 
 LOCK_DELAY="/var/lock/wgc_start_delay.lock"
 LOCK_WATCHDOG="/var/lock/wgc_watchdog.lock"
-LOCK_IPTABLES="/var/lock/wgc_iptables.lock"
 
 PEER_PUBLIC="$(nvram get vpnc_wg_peer_public)"
 PEER_PORT="$(nvram get vpnc_wg_peer_port)"
@@ -408,7 +407,6 @@ stop_wg()
 
     rm -f "$LOCK_DELAY"
     rm -f "$LOCK_WATCHDOG"
-    rm -f "$LOCK_IPTABLES"
 }
 
 filter_ipv4()
@@ -544,11 +542,7 @@ start_fw()
     is_started || return 1
     check_fw && return
 
-    (
-        # iptables v1.4.16.3 does not support locking functions (option -w)
-        flock -x 200 || exit 1
-
-        iptables-restore -n <<EOF
+    iptables-restore -n <<EOF
 *mangle
 :vpnc_wireguard - [0:0]
 :vpnc_wireguard_remote - [0:0]
@@ -564,8 +558,7 @@ $(ipt_set_rules)
 -A vpnc_wireguard_mark -m mark --mark $FWMARK -j CONNMARK --save-mark
 COMMIT
 EOF
-        [ $? -eq 0 ] || log "firewall rules update failed"
-    ) 200>$LOCK_IPTABLES
+    [ $? -eq 0 ] || log "firewall rules update failed"
 }
 
 case $1 in
