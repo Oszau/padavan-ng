@@ -1,9 +1,12 @@
 # https://curl.se
 
+SRC_NAME = curl-8.18.0
+SRC_URL = https://github.com/curl/curl/releases/download/curl-8_18_0/$(SRC_NAME).tar.xz
+
+ifneq (,$(filter y,$(CONFIG_FIRMWARE_INCLUDE_OPENSSL_11) $(CONFIG_FIRMWARE_INCLUDE_OPENSSL_10)))
 SRC_NAME = curl-8.17.0
 SRC_URL = https://github.com/curl/curl/releases/download/curl-8_17_0/$(SRC_NAME).tar.xz
-
-CPPFLAGS += $(CFLAGS)
+endif
 
 QUIC = --without-nghttp3 --without-ngtcp2 --without-openssl-quic
 ifeq ($(CONFIG_FIRMWARE_INCLUDE_QUIC),y)
@@ -12,6 +15,8 @@ endif
 ifeq ($(CONFIG_FIRMWARE_INCLUDE_QUIC_NGTCP2),y)
 QUIC = --with-nghttp3 --with-ngtcp2 --without-openssl-quic
 endif
+
+CPPFLAGS += $(CFLAGS)
 
 all: download_test extract_test config_test
 	$(MAKE) -j$(HOST_NCPU) -C $(SRC_NAME)
