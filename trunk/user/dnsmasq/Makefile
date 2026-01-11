@@ -1,27 +1,30 @@
-SRC_NAME=dnsmasq-2.8x
+# https://thekelleys.org.uk
 
-COPTS := -DHAVE_BROKEN_RTC -DNO_INOTIFY -DNO_AUTH -DNO_LOOP -DNO_DUMPFILE
-ifndef CONFIG_IPV6
-COPTS += -DNO_IPV6
-endif
-ifndef CONFIG_USB_SUPPORT
-COPTS += -DNO_TFTP
-endif
-ifeq ($(CONFIG_FIRMWARE_ENABLE_DNSMASQ_REGEX),y)
-COPTS += -DHAVE_REGEX
-ifeq ($(CONFIG_FIRMWARE_INCLUDE_IPSET),y)
-COPTS += -DHAVE_REGEX_IPSET
-endif
-endif
-ifneq ($(CONFIG_FIRMWARE_INCLUDE_IPSET),y)
-COPTS += -DNO_IPSET
-endif
+SRC_NAME = dnsmasq-2.91
+SRC_URL  = https://thekelleys.org.uk/dnsmasq/$(SRC_NAME).tar.xz
+
+CFLAGS += -DHAVE_BROKEN_RTC -DNO_INOTIFY -DNO_AUTH -DNO_LOOP -DNO_DUMPFILE -DNO_ID
+CFLAGS += $(if $(CONFIG_IPV6),,-DNO_DHCP6)
+CFLAGS += $(if $(CONFIG_USB_SUPPORT),,-DNO_TFTP)
+CFLAGS += $(if $(CONFIG_FIRMWARE_INCLUDE_IPSET),,-DNO_IPSET)
 
 CFLAGS += -ffunction-sections -fdata-sections -fvisibility=hidden
 LDFLAGS += -Wl,--gc-sections
 
-all:
-	$(MAKE) -j$(HOST_NCPU) -C $(SRC_NAME) CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" COPTS="$(COPTS)"
+all: download_test extract_test
+	$(MAKE) -C $(SRC_NAME)
+
+download_test:
+	( if [ ! -f $(SRC_NAME).tar.xz ]; then \
+		wget -t5 -T20 --no-check-certificate -O $(SRC_NAME).tar.xz $(SRC_URL) \
+			|| rm -f $(SRC_NAME).tar.xz; \
+	fi )
+
+extract_test:
+	( if [ ! -d $(SRC_NAME) ]; then \
+		tar xJf $(SRC_NAME).tar.xz; \
+		cat patches/*.patch | patch -d $(SRC_NAME) -r - -N -p1; \
+	fi )
 
 clean:
 	$(MAKE) -C $(SRC_NAME) clean

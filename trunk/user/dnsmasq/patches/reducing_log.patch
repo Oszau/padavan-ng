@@ -1,0 +1,39 @@
+--- dnsmasq-2.91.orig/src/lease.c
++++ dnsmasq-2.91/src/lease.c
+@@ -980,9 +980,10 @@
+   struct dhcp_lease *lease_tmp;
+   char *new_name = NULL, *new_fqdn = NULL;
+ 
++#if 0
+   if (config_domain && (!domain || !hostname_isequal(domain, config_domain)))
+     my_syslog(MS_DHCP | LOG_WARNING, _("Ignoring domain %s for DHCP host name %s"), config_domain, name);
+-  
++#endif
+   if (lease->hostname && name && hostname_isequal(lease->hostname, name))
+     {
+       if (auth)
+--- dnsmasq-2.91.orig/src/network.c
++++ dnsmasq-2.91/src/network.c
+@@ -1632,7 +1632,9 @@
+ 	  break;
+       if (iface)
+ 	{
++#if 0
+ 	  my_syslog(LOG_WARNING, _("ignoring nameserver %s - local interface"), daemon->namebuff);
++#endif
+ 	  serv->flags |= SERV_MARK;
+ 	  continue;
+ 	}
+--- dnsmasq-2.91.orig/src/rfc3315.c
++++ dnsmasq-2.91/src/rfc3315.c
+@@ -178,8 +178,10 @@
+ 	  
+       if (!state->context)
+ 	{
++#if 0
+ 	  my_syslog(MS_DHCP | LOG_WARNING, 
+ 		    _("no address range available for DHCPv6 request via %s"), state->iface_name);
++#endif
+ 	  return 0;
+ 	}
+ 

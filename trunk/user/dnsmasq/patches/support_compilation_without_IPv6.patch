@@ -1,0 +1,72 @@
+--- dnsmasq-2.91.orig/src/network.c
++++ dnsmasq-2.91/src/network.c
+@@ -1148,6 +1148,7 @@
+ 
+   l = create_listeners(&addr, !!option_bool(OPT_TFTP), 1);
+ 
++#ifdef CONFIG_IPV6
+   memset(&addr, 0, sizeof(addr));
+ #ifdef HAVE_SOCKADDR_SA_LEN
+   addr.in6.sin6_len = sizeof(addr.in6);
+@@ -1161,7 +1162,7 @@
+     l->next = l6;
+   else 
+     l = l6;
+-
++#endif /* CONFIG_IPV6 */
+   daemon->listeners = l;
+ }
+ 
+@@ -1534,6 +1535,7 @@
+       if ((sfd = allocate_sfd(&addr, "", 0)))
+ 	sfd->preallocated = 1;
+ 
++#ifdef CONFIV_IPV6
+       memset(&addr, 0, sizeof(addr));
+       addr.in6.sin6_family = AF_INET6;
+       addr.in6.sin6_addr = in6addr_any;
+@@ -1543,6 +1545,7 @@
+ #endif
+       if ((sfd = allocate_sfd(&addr, "", 0)))
+ 	sfd->preallocated = 1;
++#endif /* CONFIG_IPV6 */
+     }
+   
+   for (srv = daemon->servers; srv; srv = srv->next)
+@@ -1765,6 +1768,7 @@
+ 	  source_addr.in.sin_addr.s_addr = INADDR_ANY;
+ 	  source_addr.in.sin_port = htons(daemon->query_port);
+ 	}
++#ifdef CONFIG_IPV6
+       else 
+ 	{	
+ 	  int scope_index = 0;
+@@ -1792,6 +1796,10 @@
+ 	  else
+ 	    continue;
+ 	}
++#else /* CONFIG_IPV6 */
++	  else
++	    continue;
++#endif /* CONFIG_IPV6 */
+ 
+       add_update_server(SERV_FROM_RESOLV, &addr, &source_addr, NULL, NULL, NULL);
+       gotone = 1;
+--- dnsmasq-2.91.orig/src/option.c
++++ dnsmasq-2.91/src/option.c
+@@ -1035,6 +1035,7 @@
+ 	    }
+ 	}
+     }
++#ifdef CONFIG_IPV6
+   else if (sdetails->addr_type == AF_INET6)
+     {
+       if (sdetails->scope_id && (sdetails->scope_index = if_nametoindex(sdetails->scope_id)) == 0)
+@@ -1081,6 +1082,7 @@
+ 	    }
+ 	}
+     }
++#endif /* CONFIG_IPV6 */
+   else if (sdetails->addr_type != AF_LOCAL)
+     return _("bad address");
+   
