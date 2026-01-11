@@ -1,11 +1,13 @@
 # https://github.com/bol-van/zapret
 
-SRC_VER = 72.6
+SRC_VER = 72.7
 SRC_NAME = zapret-$(SRC_VER)
 SRC_URL = https://github.com/bol-van/zapret/archive/refs/tags/v$(SRC_VER).tar.gz
 
 CFLAGS += -DZAPRET_GH_VER=v$(SRC_VER) -DZAPRET_GH_HASH=release
 CFLAGS += $(if $(CONFIG_IPV6),-DUSE_IPV6,)
+CFLAGS += -ffunction-sections -fdata-sections -fvisibility=hidden
+LDFLAGS += -Wl,--gc-sections
 
 all: download_test extract_test
 	$(MAKE) -j$(HOST_NCPU) -C $(SRC_NAME)
