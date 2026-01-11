@@ -5,7 +5,7 @@ SRC_DIR := $(SRC_NAME)/source3
 SRC_URL := https://download.samba.org/pub/samba/stable/$(SRC_NAME).tar.gz
 THISDIR := $(shell pwd)
 
-SMBCFLAGS = -Wall -D__location__=\\\"\\\" -ffunction-sections -fdata-sections $(CFLAGS)
+SMBCFLAGS = -Wall -D__location__=\\\"\\\" -ffunction-sections -fdata-sections -fvisibility=hidden $(CFLAGS)
 SMBLDFLAGS = -Wl,--gc-sections $(LDFLAGS)
 SMBCPPFLAGS = $(CPPFLAGS) -DNDEBUG -DSHMEM_SIZE=524288 -Dfcntl=fcntl64 -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE=1 -D_LARGEFILE64_SOURCE=1 -D_LARGE_FILES=1
 MAKE_FLAGS = $(MAKEFLAGS) DYNEXP= PICFLAG= MODULES=

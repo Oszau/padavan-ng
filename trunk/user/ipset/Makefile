@@ -3,6 +3,8 @@
 SRC_NAME=ipset-7.24
 SRC_URL=https://ipset.netfilter.org/$(SRC_NAME).tar.bz2
 
+CFLAGS += -ffunction-sections -fdata-sections -fvisibility=hidden
+
 all: download_test extract_test config_test
 	$(MAKE) -j$(HOST_NCPU) -C $(SRC_NAME)
 	$(MAKE) modules -j$(HOST_NCPU) -C $(SRC_NAME)
