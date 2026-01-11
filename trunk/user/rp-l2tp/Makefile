@@ -1,7 +1,7 @@
 SRC_NAME=rp-l2tp-0.5-rtn
 
 CFLAGS  += -I$(KERNEL_HEADERS_PATH) -DPPPOL2TP_V1
-CFLAGS  += -ffunction-sections -fdata-sections -fvisibility=hidden
+CFLAGS  += -ffunction-sections -fdata-sections
 LDFLAGS += -Wl,--gc-sections
 
 all: config_test

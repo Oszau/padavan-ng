@@ -11,7 +11,7 @@ ETCDIR = $(INSTROOT)/tmp/ppp
 
 # uid 0 = root
 INSTALL= install
-CFLAGS += -ffunction-sections -fdata-sections -fvisibility=hidden
+CFLAGS += -ffunction-sections -fdata-sections
 LDFLAGS += -Wl,--gc-sections
 MFLAGS=$(if $(CONFIG_IPV6),HAVE_INET6=y,)
 
