@@ -1,6 +1,6 @@
---- dnsmasq-2.91.orig/src/dnsmasq.c
-+++ dnsmasq-2.91/src/dnsmasq.c
-@@ -1057,10 +1057,7 @@
+--- dnsmasq-2.92.orig/src/dnsmasq.c
++++ dnsmasq-2.92/src/dnsmasq.c
+@@ -1075,10 +1075,7 @@
    /* finished start-up - release original process */
    if (err_pipe[1] != -1)
      close(err_pipe[1]);
@@ -11,8 +11,8 @@
 +
    pid = getpid();
  
-   daemon->pipe_to_parent = -1;
-@@ -1501,14 +1498,14 @@
+ #ifdef HAVE_INOTIFY
+@@ -1513,14 +1510,14 @@
  	  {
  	    if (daemon->resolv_files && option_bool(OPT_NO_POLL))
  	      {
@@ -31,9 +31,9 @@
  	      }
  
  	    if (check)
---- dnsmasq-2.91.orig/src/dnsmasq.h
-+++ dnsmasq-2.91/src/dnsmasq.h
-@@ -1511,7 +1511,7 @@
+--- dnsmasq-2.92.orig/src/dnsmasq.h
++++ dnsmasq-2.92/src/dnsmasq.h
+@@ -1539,7 +1539,7 @@
  char *option_string(int prot, unsigned int opt, unsigned char *val, 
  		    int opt_len, char *buf, int buf_len);
  void reread_dhcp(void);
@@ -42,9 +42,9 @@
  void set_option_bool(unsigned int opt);
  void reset_option_bool(unsigned int opt);
  struct hostsfile *expand_filelist(struct hostsfile *list);
---- dnsmasq-2.91.orig/src/option.c
-+++ dnsmasq-2.91/src/option.c
-@@ -5781,21 +5781,21 @@
+--- dnsmasq-2.92.orig/src/option.c
++++ dnsmasq-2.92/src/option.c
+@@ -5831,21 +5831,21 @@
    return list;
  }
  

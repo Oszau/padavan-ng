@@ -1,6 +1,6 @@
 # https://thekelleys.org.uk
 
-SRC_NAME = dnsmasq-2.91
+SRC_NAME = dnsmasq-2.92
 SRC_URL  = https://thekelleys.org.uk/dnsmasq/$(SRC_NAME).tar.xz
 
 CFLAGS += -DHAVE_BROKEN_RTC -DNO_INOTIFY -DNO_AUTH -DNO_LOOP -DNO_DUMPFILE -DNO_ID
