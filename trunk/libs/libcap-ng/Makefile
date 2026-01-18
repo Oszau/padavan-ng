@@ -28,6 +28,9 @@ configure:
 		--prefix=/ \
 		--enable-static \
 		--disable-shared \
+		ac_cv_prog_swig_found=no \
+		--without-python \
+		--without-python3 \
 		--host=$(HOST_TARGET) \
 		--build=$(HOST_BUILD) ; \
 	)
