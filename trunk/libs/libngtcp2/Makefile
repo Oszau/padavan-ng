@@ -1,6 +1,6 @@
 # https://github.com/ngtcp2/ngtcp2
 
-SRC_VER = 1.19.0
+SRC_VER = 1.20.0
 SRC_NAME = ngtcp2-$(SRC_VER)
 SRC_URL = https://github.com/ngtcp2/ngtcp2/releases/download/v$(SRC_VER)/$(SRC_NAME).tar.xz
 
