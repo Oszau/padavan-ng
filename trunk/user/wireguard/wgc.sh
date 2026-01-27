@@ -297,7 +297,7 @@ get_latest_handshakes()
 
 send_ping()
 {
-    timeout 1 ping -I $IF_NAME 255.255.255.255 >/dev/null 2>&1 &
+    timeout 1 ping -I $IF_NAME 255.255.255.255 >/dev/null 2>&1
 }
 
 check_connected()
@@ -325,7 +325,7 @@ check_connection_status()
 {
     local loop=0
     while is_started; do
-        [ "$loop" -ge 7 ] && break
+        [ "$loop" -ge 10 ] && break
         check_connected && return 0
         loop=$((loop + 1))
         sleep 1
@@ -338,8 +338,6 @@ start_wg()
 {
     is_started && die "already started"
 
-    set_state 2
-    ipset_create
     delayed_start &
     echo $! > "$LOCK_DELAY"
 }
@@ -349,6 +347,8 @@ delayed_start()
     # waiting restart zapret firewall rules
     sleep 2
 
+    set_state 2
+    ipset_create
     wg_if_init
     add_route
     wg_setdns
