@@ -26,12 +26,15 @@ ENV LC_ALL en_US.UTF-8
 WORKDIR $WORKDIR
 
 RUN git config --global --add safe.directory '*'
-RUN git clone -b "${PADAVAN_BRANCH}" "${PADAVAN_REPO}" padavan-ng --depth=1
-RUN git -C padavan-ng checkout "${PADAVAN_COMMIT}"
+RUN git clone -b "$PADAVAN_BRANCH" "$PADAVAN_REPO" padavan-ng --depth=1
+RUN git -C padavan-ng checkout "$PADAVAN_COMMIT"
 
-RUN [ -n "${PADAVAN_TOOLCHAIN_URL}" ] && TAR_ARCH="" && \
-    case "${PADAVAN_TOOLCHAIN_URL}" in \
+# downloading and extracting a pre-compiled toolchain
+# PADAVS_TOOLCHAIN_URL variable contains a link to the toolchain archive, use --env for pass it
+# internal archive format: toolchain/out/*
+RUN [ -n "$PADAVAN_TOOLCHAIN_URL" ] && TAR_ARCH="" && \
+    case "$PADAVAN_TOOLCHAIN_URL" in \
         *.tzst|*.tar.zst) TAR_ARCH="--zstd" ;; \
         *.txz|*.tar.xz) TAR_ARCH="--xz" ;; \
     esac && \
-    wget -qO- "${PADAVAN_TOOLCHAIN_URL}" | tar -C padavan-ng $TAR_ARCH -xf - || :
+    wget -qO- "$PADAVAN_TOOLCHAIN_URL" | tar -C padavan-ng $TAR_ARCH -xf - || :
