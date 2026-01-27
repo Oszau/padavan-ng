@@ -1,41 +1,37 @@
-FROM ubuntu:focal
+FROM ubuntu:24.04
+
+ARG PADAVAN_REPO=https://github.com/nilabsent/padavan-ng
+ARG PADAVAN_BRANCH=master
+ARG PADAVAN_COMMIT=HEAD
 
 ENV DEBIAN_FRONTEND noninteractive
+ENV WORKDIR /opt
 
-RUN apt-get update && apt-get install -qy apt-utils
-RUN apt-get -qy install locales
+RUN apt update
+RUN apt install --no-install-recommends -y \
+        autoconf automake autopoint cmake \
+        bison build-essential flex gawk \
+        gettext git gperf libtool libtool-bin \
+        pkg-config fakeroot kmod cpio doxygen \
+        texinfo help2man libncurses5-dev \
+        zlib1g-dev libsqlite3-dev gcc-multilib \
+        curl dos2unix unzip wget locales xxd libltdl-dev \
+        libgmp3-dev libmpfr-dev libarchive-tools libblkid-dev \
+        ca-certificates zstd mc
 RUN locale-gen --no-purge en_US.UTF-8 ru_RU.UTF-8
+
+ENV LANG en_US.UTF-8
 ENV LC_ALL en_US.UTF-8
 
+WORKDIR $WORKDIR
 
-RUN apt-get install -qy \
-	git \
-	build-essential \
-	gawk \
-	pkg-config \
-	gettext \
-	automake \
-	autoconf \
-	autopoint \
-	libtool \
-	bison \
-	flex \
-	zlib1g-dev \
-	libgmp3-dev \
-	libmpfr-dev \
-	libmpc-dev \
-	texinfo \
-	mc \
-	libncurses5-dev \
-	nano \
-	vim \
-	autopoint \
-	gperf \
-	python-docutils \
-	help2man \
-	libtool-bin \
-	libtool-doc
+RUN git config --global --add safe.directory '*'
+RUN git clone -b "${PADAVAN_BRANCH}" "${PADAVAN_REPO}" padavan-ng --depth=1
+RUN git -C padavan-ng checkout "${PADAVAN_COMMIT}"
 
-RUN git clone https://gitlab.com/dm38/padavan-ng.git --depth=1 /opt/padavan-ng
-
-RUN cd /opt/padavan-ng/toolchain && ./clean_sources.sh && ./build_toolchain.sh
+RUN [ -n "${PADAVAN_TOOLCHAIN_URL}" ] && TAR_ARCH="" && \
+    case "${PADAVAN_TOOLCHAIN_URL}" in \
+        *.tzst|*.tar.zst) TAR_ARCH="--zstd" ;; \
+        *.txz|*.tar.xz) TAR_ARCH="--xz" ;; \
+    esac && \
+    wget -qO- "${PADAVAN_TOOLCHAIN_URL}" | tar -C padavan-ng $TAR_ARCH -xf - || :
