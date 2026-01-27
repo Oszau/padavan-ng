@@ -538,11 +538,9 @@ if [ "$CONFIG_FIRMWARE_INCLUDE_SHORTCUT_FE" = "y" ] ; then
 	func_enable_kernel_param "CONFIG_NF_CONNTRACK_EVENTS"
 	func_enable_kernel_param "CONFIG_NF_CONNTRACK_CHAIN_EVENTS"
 fi
-############################## NFQWS SUPPORT ##########################
-if [ "$CONFIG_FIRMWARE_INCLUDE_NFQWS" = "y" ] || [ "$CONFIG_FIRMWARE_INCLUDE_NFQWS2" = "y" ]; then
-	func_enable_kernel_param_as_m "CONFIG_NETFILTER_NETLINK_QUEUE"
-	func_enable_kernel_param_as_m "CONFIG_NETFILTER_XT_TARGET_NFQUEUE"
-fi
+############################## Default kernel modules #################
+func_enable_kernel_param_as_m "CONFIG_NETFILTER_NETLINK_QUEUE"
+func_enable_kernel_param_as_m "CONFIG_NETFILTER_XT_TARGET_NFQUEUE"
 #######################################################################
 echo --------------------------MAKE-DEP--------------------------------
 make dep
