@@ -52,7 +52,6 @@ configure:
 		$(if $(CONFIG_IPV6),--enable-ipv6,--disable-ipv6) \
 		$(QUIC) \
 		--without-quiche \
-		--without-msh3 \
 		--disable-ipfs \
 		--disable-rtsp \
 		--disable-websockets \
