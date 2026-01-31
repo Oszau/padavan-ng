@@ -1,7 +1,5 @@
-# patches: https://dd.astralinux.ru/astra/frozen/2.12_x86-64/2.12.45/repository/pool/main/o/openssl1.0/openssl1.0_1.0.2u-1~deb9u7.debian.tar.xz
-
-SRC_NAME = openssl-1.0.2u
-SRC_URL  = https://github.com/openssl/openssl/releases/download/OpenSSL_1_0_2u/openssl-1.0.2u.tar.gz
+SRC_NAME = openssl-1.0.2zl
+#SRC_URL  = https://packages.vmware.com/photon/3.0/photon_srpms_3.0_x86_64/openssl-1.0.2zl-1.ph3.src.rpm
 
 # openssl use CROSS_COMPILE prefix
 CC = gcc $(CPUFLAGS)
@@ -42,7 +40,8 @@ ifeq (,$(filter y,$(CONFIG_FIRMWARE_INCLUDE_OPENSSL_EC) \
 OPENSSL_CIPHERS += no-ec
 endif
 
-all: download_test extract_test config_test
+#all: download_test extract_test config_test
+all: extract_test config_test
 	$(MAKE) -j$(HOST_NCPU) -C $(SRC_NAME) depend
 	$(MAKE) -j$(HOST_NCPU) -C $(SRC_NAME)
 
