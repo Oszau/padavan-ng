@@ -1,5 +1,5 @@
---- zapret2-0.1.2.orig/ip2net/Makefile
-+++ zapret2-0.1.2/ip2net/Makefile
+--- zapret2-0.9.0.orig/ip2net/Makefile
++++ zapret2-0.9.0/ip2net/Makefile
 @@ -1,6 +1,6 @@
  CC ?= cc
  OPTIMIZE ?= -Os
@@ -8,18 +8,21 @@
  CFLAGS_BSD = -Wno-address-of-packed-member
  CFLAGS_WIN = -static
  LIBS = 
---- zapret2-0.1.2.orig/nfq2/Makefile
-+++ zapret2-0.1.2/nfq2/Makefile
-@@ -1,6 +1,6 @@
+--- zapret2-0.9.0.orig/nfq2/Makefile
++++ zapret2-0.9.0/nfq2/Makefile
+@@ -1,9 +1,8 @@
  CC ?= cc
+ PKG_CONFIG ?= pkg-config
  OPTIMIZE ?= -Os
 -CFLAGS += -std=gnu99 $(OPTIMIZE) -flto=auto
 +CFLAGS += -std=gnu99 $(OPTIMIZE)
- CFLAGS_SYSTEMD = -DUSE_SYSTEMD
+ CFLAGS_LINUX = -Wno-alloc-size-larger-than
+-CFLAGS_SYSTEMD = -DUSE_SYSTEMD
  CFLAGS_BSD = -Wno-address-of-packed-member
  CFLAGS_CYGWIN = -Wno-address-of-packed-member -static
---- zapret2-0.1.2.orig/nfq2/sec.c
-+++ zapret2-0.1.2/nfq2/sec.c
+ LDFLAGS_ANDROID = -llog
+--- zapret2-0.9.0.orig/nfq2/sec.c
++++ zapret2-0.9.0/nfq2/sec.c
 @@ -13,7 +13,7 @@
  
  #include <sys/prctl.h>
@@ -29,7 +32,7 @@
  #include <linux/filter.h>
  // __X32_SYSCALL_BIT defined in linux/unistd.h
  #include <linux/unistd.h>
-@@ -124,6 +124,7 @@
+@@ -113,6 +113,7 @@
  	filter->k = k;
  }
  // deny all blocked syscalls
@@ -37,7 +40,7 @@
  static bool set_seccomp(void)
  {
  #ifdef __X32_SYSCALL_BIT
-@@ -153,6 +154,7 @@
+@@ -142,6 +143,7 @@
  	set_filter(&prog.filter[idx++], BPF_JMP + BPF_JGT + BPF_K, 2 + BLOCKED_SYSCALL_COUNT, 0, 2); // 1 - stdout, 2 - stderr. greater are bad
  	set_filter(&prog.filter[idx++], BPF_LD + BPF_W + BPF_ABS, 0, 0, syscall_nr); // reload syscall_nr
  */
@@ -45,7 +48,7 @@
  	for(i=0 ; i<BLOCKED_SYSCALL_COUNT ; i++)
  	{
  		set_filter(&prog.filter[idx++], BPF_JMP + BPF_JEQ + BPF_K, BLOCKED_SYSCALL_COUNT-i, 0, blocked_syscalls[i]);
-@@ -161,9 +163,12 @@
+@@ -150,9 +152,12 @@
  	set_filter(&prog.filter[idx++], BPF_RET + BPF_K, 0, 0, SECCOMP_RET_KILL); // fail case
  	return prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, &prog) >= 0;
  }
@@ -58,7 +61,7 @@
  	bool bRes = true;
  	if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0))
  	{
-@@ -179,11 +184,9 @@
+@@ -168,11 +173,9 @@
  	}
  #endif
  	return bRes;
@@ -71,8 +74,8 @@
  bool checkpcap(uint64_t caps)
  {
  	if (!caps) return true; // no special caps reqd
---- zapret2-0.1.2.orig/nfq2/sec.h
-+++ zapret2-0.1.2/nfq2/sec.h
+--- zapret2-0.9.0.orig/nfq2/sec.h
++++ zapret2-0.9.0/nfq2/sec.h
 @@ -2,11 +2,12 @@
  
  #include <sys/types.h>

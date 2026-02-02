@@ -1,6 +1,6 @@
 # https://github.com/bol-van/zapret2
 
-SRC_VER = 0.8.6
+SRC_VER = 0.9.0
 SRC_NAME = zapret2-$(SRC_VER)
 SRC_URL = https://github.com/bol-van/zapret2/archive/refs/tags/v$(SRC_VER).tar.gz
 
@@ -34,5 +34,5 @@ romfs:
 	$(ROMFSINST) -d $(SRC_NAME)/lua/zapret-antidpi.lua /usr/share/zapret/lua/zapret-antidpi.lua
 	$(ROMFSINST) -d $(SRC_NAME)/lua/zapret-auto.lua /usr/share/zapret/lua/zapret-auto.lua
 	$(ROMFSINST) -d $(SRC_NAME)/lua/zapret-lib.lua /usr/share/zapret/lua/zapret-lib.lua
-	$(ROMFSINST) -d $(SRC_NAME)/lua/zapret-wgobfs.lua /usr/share/zapret/lua/zapret-wgobfs.lua
+	$(ROMFSINST) -d $(SRC_NAME)/lua/zapret-obfs.lua /usr/share/zapret/lua/zapret-obfs.lua
 	$(ROMFSINST) -p +x /usr/bin/zapret.sh

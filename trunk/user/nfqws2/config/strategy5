@@ -7,7 +7,7 @@
 ### https, http
 --filter-tcp=443,80 --filter-l7=http,tls <HOSTLIST>
 --payload=tls_client_hello
---lua-desync=fake:blob=fake_default_tls:tls_mod=rnd,dupsid,sni=www.max.ru:tcp_ts=-1000
+--lua-desync=fake:blob=fake_default_tls:tls_mod=rnd,dupsid,sni=www.max.ru:tcp_seq=10000
 --lua-desync=multidisorder:pos=1,midsld,sniext+1,endhost-2,-10:seqovl=1:seqovl_pattern=tls_max:tcp_ts_up
 --payload=http_req
 --lua-desync=http_methodeol:badsum
