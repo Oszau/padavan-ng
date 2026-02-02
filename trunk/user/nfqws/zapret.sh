@@ -304,7 +304,7 @@ start_service()
         exit 1
     fi
 
-    log "started $(basename $NFQWS_BIN), $(echo "$res" | head -n1)"
+    log "started $(basename $NFQWS_BIN), $(echo "$res" | grep 'github version')"
     [ "$CLIENTS_ALLOWED" ] && log "allowed clients: $CLIENTS_ALLOWED"
     log "use strategy from $STRATEGY_FILE"
     log "$pattern"
