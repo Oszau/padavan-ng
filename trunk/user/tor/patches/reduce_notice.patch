@@ -1,5 +1,5 @@
---- tor-0.4.8.21.orig/src/app/config/config.c
-+++ tor-0.4.8.21/src/app/config/config.c
+--- tor-0.4.8.22.orig/src/app/config/config.c
++++ tor-0.4.8.22/src/app/config/config.c
 @@ -3871,7 +3871,7 @@
        !options->HashedControlPassword &&
        !options->HashedControlSessionPassword &&
@@ -34,8 +34,8 @@
                   "for %sPort. This allows everybody on your local network to "
                   "use your machine as a proxy. Make sure this is what you "
                   "wanted.",
---- tor-0.4.8.21.orig/src/app/main/main.c
-+++ tor-0.4.8.21/src/app/main/main.c
+--- tor-0.4.8.22.orig/src/app/main/main.c
++++ tor-0.4.8.22/src/app/main/main.c
 @@ -588,7 +588,7 @@
                   tor_libc_get_name() : "Unknown",
                 tor_libc_get_version_str());
@@ -54,8 +54,8 @@
               "and you probably shouldn't.");
  #endif
  
---- tor-0.4.8.21.orig/src/core/mainloop/connection.c
-+++ tor-0.4.8.21/src/core/mainloop/connection.c
+--- tor-0.4.8.22.orig/src/core/mainloop/connection.c
++++ tor-0.4.8.22/src/core/mainloop/connection.c
 @@ -1500,7 +1500,7 @@
        start_reading = 1;
  
@@ -92,8 +92,8 @@
  
      newconn = connection_new(new_type, conn->socket_family);
      newconn->s = news;
---- tor-0.4.8.21.orig/src/core/mainloop/mainloop.c
-+++ tor-0.4.8.21/src/core/mainloop/mainloop.c
+--- tor-0.4.8.22.orig/src/core/mainloop/mainloop.c
++++ tor-0.4.8.22/src/core/mainloop/mainloop.c
 @@ -1137,7 +1137,7 @@
    if (!router_have_minimum_dir_info()) {
      int quiet = suppress_logs || from_cache ||
@@ -103,8 +103,8 @@
          "I learned some more directory information, but not enough to "
          "build a circuit: %s", get_dir_info_status_string());
      update_all_descriptor_downloads(now);
---- tor-0.4.8.21.orig/src/core/or/circuitbuild.c
-+++ tor-0.4.8.21/src/core/or/circuitbuild.c
+--- tor-0.4.8.22.orig/src/core/or/circuitbuild.c
++++ tor-0.4.8.22/src/core/or/circuitbuild.c
 @@ -2571,7 +2571,7 @@
                  "Failed to find node for hop #%d of our path. Discarding "
                  "this circuit.", cur_len+1);
@@ -114,8 +114,8 @@
                   "Failed to find node for hop #%d of our path. Discarding "
                   "this circuit.", cur_len+1);
      }
---- tor-0.4.8.21.orig/src/core/or/circuitstats.c
-+++ tor-0.4.8.21/src/core/or/circuitstats.c
+--- tor-0.4.8.22.orig/src/core/or/circuitstats.c
++++ tor-0.4.8.22/src/core/or/circuitstats.c
 @@ -1609,7 +1609,7 @@
  
    cbt_control_event_buildtimeout_set(cbt, BUILDTIMEOUT_SET_EVENT_RESET);
@@ -125,8 +125,8 @@
              "Your network connection speed appears to have changed. Resetting "
              "timeout to %ldms after %d timeouts and %d buildtimes.",
              tor_lround(cbt->timeout_ms), timeout_count, total_build_times);
---- tor-0.4.8.21.orig/src/core/or/circuituse.c
-+++ tor-0.4.8.21/src/core/or/circuituse.c
+--- tor-0.4.8.22.orig/src/core/or/circuituse.c
++++ tor-0.4.8.22/src/core/or/circuituse.c
 @@ -630,7 +630,7 @@
          static ratelim_t relax_timeout_limit = RATELIM_INIT(3600);
          const double build_close_ms = get_circuit_build_close_time_ms();
@@ -154,8 +154,8 @@
                     "connection, but we already have %d general-purpose client "
                     "circuits pending. Waiting until some finish.%s",
                     n_pending, m);
---- tor-0.4.8.21.orig/src/core/or/connection_edge.c
-+++ tor-0.4.8.21/src/core/or/connection_edge.c
+--- tor-0.4.8.22.orig/src/core/or/connection_edge.c
++++ tor-0.4.8.22/src/core/or/connection_edge.c
 @@ -1203,7 +1203,7 @@
      conn = ENTRY_TO_EDGE_CONN(entry_conn);
      /* if it's an internal linked connection, don't yell its status. */
@@ -165,8 +165,8 @@
      seconds_idle = (int)( now - base_conn->timestamp_last_read_allowed );
      seconds_since_born = (int)( now - base_conn->timestamp_created );
  
---- tor-0.4.8.21.orig/src/core/or/relay.c
-+++ tor-0.4.8.21/src/core/or/relay.c
+--- tor-0.4.8.22.orig/src/core/or/relay.c
++++ tor-0.4.8.22/src/core/or/relay.c
 @@ -1032,7 +1032,7 @@
              return 0;
            /* else, conn will get closed below */
@@ -176,8 +176,8 @@
                       "Have tried resolving or connecting to address '%s' "
                       "at %d different places. Giving up.",
                       safe_str(conn->socks_request->address),
---- tor-0.4.8.21.orig/src/core/or/status.c
-+++ tor-0.4.8.21/src/core/or/status.c
+--- tor-0.4.8.22.orig/src/core/or/status.c
++++ tor-0.4.8.22/src/core/or/status.c
 @@ -206,7 +206,7 @@
    bw_rcvd = bytes_to_usage(get_bytes_read());
    bw_sent = bytes_to_usage(get_bytes_written());
@@ -187,8 +187,8 @@
           "circuits open. I've sent %s and received %s. I've received %u "
           "connections on IPv4 and %u on IPv6. I've made %u connections "
           "with IPv4 and %u with IPv6.%s",
---- tor-0.4.8.21.orig/src/feature/client/bridges.c
-+++ tor-0.4.8.21/src/feature/client/bridges.c
+--- tor-0.4.8.22.orig/src/feature/client/bridges.c
++++ tor-0.4.8.22/src/feature/client/bridges.c
 @@ -907,7 +907,7 @@
      if (!tor_addr_is_null(&ri->ipv6_addr)) {
        tor_addr_port_t ap;
@@ -225,8 +225,8 @@
                     ri->nickname,
                     from_cache ? "cached" : "fresh", router_describe(ri));
        /* If we didn't have a reachable bridge before this one, try directory
---- tor-0.4.8.21.orig/src/feature/client/entrynodes.c
-+++ tor-0.4.8.21/src/feature/client/entrynodes.c
+--- tor-0.4.8.22.orig/src/feature/client/entrynodes.c
++++ tor-0.4.8.22/src/feature/client/entrynodes.c
 @@ -2167,7 +2167,7 @@
             * anyway and log. */
            if (smartlist_len(usable_primary_guards) == 0) {
@@ -236,8 +236,19 @@
                             "All current guards excluded by path restriction "
                             "type %d; using an additonal guard.",
                             rst->type);
---- tor-0.4.8.21.orig/src/feature/dirclient/dirclient.c
-+++ tor-0.4.8.21/src/feature/dirclient/dirclient.c
+--- tor-0.4.8.22.orig/src/feature/control/control_bootstrap.c
++++ tor-0.4.8.22/src/feature/control/control_bootstrap.c
+@@ -294,7 +294,7 @@
+ 
+   tor_assert(bootstrap_status_to_string(bootstrap_phase, &tag, &summary) == 0);
+ 
+-  severity = dowarn ? LOG_WARN : LOG_INFO;
++  severity = LOG_INFO;
+ 
+   if (dowarn)
+     recommendation = "warn";
+--- tor-0.4.8.22.orig/src/feature/dirclient/dirclient.c
++++ tor-0.4.8.22/src/feature/dirclient/dirclient.c
 @@ -500,7 +500,7 @@
          if (guard_state) {
            entry_guard_cancel(&guard_state);
@@ -265,8 +276,8 @@
                   bootstrapped?"not ":"", log_line);
        tor_free(log_line);
  
---- tor-0.4.8.21.orig/src/feature/dirparse/microdesc_parse.c
-+++ tor-0.4.8.21/src/feature/dirparse/microdesc_parse.c
+--- tor-0.4.8.22.orig/src/feature/dirparse/microdesc_parse.c
++++ tor-0.4.8.22/src/feature/dirparse/microdesc_parse.c
 @@ -187,7 +187,7 @@
  
    if (tokenize_string(area, s, start_of_next_microdesc, tokens,
@@ -276,8 +287,8 @@
               saved_location_to_string(where));
      goto err;
    }
---- tor-0.4.8.21.orig/src/feature/hs/hs_client.c
-+++ tor-0.4.8.21/src/feature/hs/hs_client.c
+--- tor-0.4.8.22.orig/src/feature/hs/hs_client.c
++++ tor-0.4.8.22/src/feature/hs/hs_client.c
 @@ -305,7 +305,7 @@
    if (count > 0) {
      char onion_address[HS_SERVICE_ADDR_LEN_BASE32 + 1];
@@ -287,8 +298,8 @@
                          "for reason %s. Fetch status: %s.",
                 count, safe_str_client(onion_address),
                 stream_end_reason_to_string(reason),
---- tor-0.4.8.21.orig/src/feature/nodelist/nodefamily.c
-+++ tor-0.4.8.21/src/feature/nodelist/nodefamily.c
+--- tor-0.4.8.22.orig/src/feature/nodelist/nodefamily.c
++++ tor-0.4.8.22/src/feature/nodelist/nodefamily.c
 @@ -191,7 +191,7 @@
  
      if (bad_element) {
@@ -298,8 +309,8 @@
               "Bad element %s while parsing a node family.",
               escaped(cp));
        ++n_bad_elements;
---- tor-0.4.8.21.orig/src/feature/nodelist/nodelist.c
-+++ tor-0.4.8.21/src/feature/nodelist/nodelist.c
+--- tor-0.4.8.22.orig/src/feature/nodelist/nodelist.c
++++ tor-0.4.8.22/src/feature/nodelist/nodelist.c
 @@ -2645,7 +2645,7 @@
  
    if (old_have_consensus_path != have_consensus_path) {
@@ -336,8 +347,8 @@
          "Our directory information is no longer up-to-date "
          "enough to build circuits: %s", dir_info_status);
      if (!quiet) {
---- tor-0.4.8.21.orig/src/lib/crypt_ops/crypto_openssl_mgt.c
-+++ tor-0.4.8.21/src/lib/crypt_ops/crypto_openssl_mgt.c
+--- tor-0.4.8.22.orig/src/lib/crypt_ops/crypto_openssl_mgt.c
++++ tor-0.4.8.22/src/lib/crypt_ops/crypto_openssl_mgt.c
 @@ -235,7 +235,7 @@
                   "(%lx: %s).", version_num, version_str);
      } else if ((version_num & 0xffff0000) ==
