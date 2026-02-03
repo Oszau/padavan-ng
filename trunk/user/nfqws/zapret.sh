@@ -25,6 +25,8 @@ HOSTLIST_DOMAINS="https://github.com/1andrevich/Re-filter-lists/releases/latest/
 HOSTLIST_MARKER="<HOSTLIST>"
 HOSTLIST_NOAUTO_MARKER="<HOSTLIST_NOAUTO>"
 
+[ ! -f "/tmp/auto.list" ] && cp ${CONF_DIR}/auto.list /tmp/auto.list
+
 HOSTLIST_NOAUTO="
   --hostlist=${CONF_DIR}/user.list
   --hostlist=${CONF_DIR}/auto.list
@@ -34,7 +36,7 @@ HOSTLIST_NOAUTO="
 HOSTLIST="
   --hostlist=${CONF_DIR}/user.list
   --hostlist-exclude=${CONF_DIR}/exclude.list
-  --hostlist-auto=${CONF_DIR}/auto.list
+  --hostlist-auto=/tmp/auto.list
   --hostlist=/tmp/filter.list
 "
 
