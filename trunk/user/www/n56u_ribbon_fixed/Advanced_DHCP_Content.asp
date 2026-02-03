@@ -528,6 +528,14 @@ function changeBgColor(obj, num){
                                                 </div>
                                             </td>
                                         </tr>
+                                        <tr id="row_dhcpconf">
+                                            <td colspan="2">
+                                                <a href="javascript:spoiler_toggle('spoiler_dhcpconf')"><span><#CustomConf#> "dhcp.conf"</span></a>
+                                                <div id="spoiler_dhcpconf" style="display:none;">
+                                                    <textarea rows="16" wrap="off" spellcheck="false" maxlength="16384" class="span12" name="dnsmasq.dhcp.conf" style="resize:none; font-family:'Courier New'; font-size:12px;"><% nvram_dump("dnsmasq.dhcp.conf",""); %></textarea>
+                                                </div>
+                                            </td>
+                                        </tr>
                                         <tr id="row_dipset">
                                             <td colspan="2">
                                                 <a href="javascript:spoiler_toggle('spoiler_dipset')"><span><#CustomConf#> "dnsmasq.ipset"</span></a>
