@@ -949,7 +949,11 @@ set_libc_gai(int ipv4_first)
 	if (ipv4_first) {
 		FILE *fp = fopen("/etc/gai.conf", "w");
 		if (fp) {
+#if defined (USE_IPV6)
+			fprintf(fp, "precedence %s\n", "::ffff:0:0/96 100");
+#else
 			fprintf(fp, "precedence %s\n", "ipv4");
+#endif
 			fclose(fp);
 		}
 	} else {

@@ -1,0 +1,18 @@
+--- wsdd2-1.8.7.orig/wsdd2.c
++++ wsdd2-1.8.7/wsdd2.c
+@@ -364,6 +364,7 @@
+ 		ep->local.in.sin_port = htons(ep->port);
+ 		break;
+ 
++#ifdef CONFIG_IPV6
+ 	case AF_INET6:
+ 		if (sv->mcast_addr) {
+ 			ep->mcast.in6.sin6_port = htons(ep->port);
+@@ -379,6 +380,7 @@
+ 		ep->local.in6.sin6_addr = in6addr_any;
+ 		ep->local.in6.sin6_port = htons(ep->port);
+ 		break;
++#endif
+ 
+ 	case AF_NETLINK:
+ 		ep->local.nl.nl_pid = getpid();

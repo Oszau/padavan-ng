@@ -3,6 +3,7 @@ SRC_NAME = openvpn-$(SRC_VER)
 SRC_URL = https://github.com/OpenVPN/openvpn/archive/refs/tags/v$(SRC_VER).tar.gz
 
 CFLAGS += -ffunction-sections -fdata-sections -fvisibility=hidden
+CFLAGS += $(if $(CONFIG_IPV6),-DCONFIG_IPV6,)
 LDFLAGS += -Wl,--gc-sections
 
 all: download_test extract_test config_test

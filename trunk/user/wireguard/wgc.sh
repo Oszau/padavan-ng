@@ -115,7 +115,7 @@ setconf_wg()
         PEER_ALLOWEDIPS=$(echo "$PEER_ALLOWEDIPS" | tr -s ',' '\n' | grep -v ':' | tr -s '\n' ',' | sed 's/,$//')
     fi
 
-    local awg
+    local awg gai
     if [ "$MODULE" = "amneziawg" ]; then
         cps()
         {
@@ -147,13 +147,8 @@ AllowedIPs = $PEER_ALLOWEDIPS
 EOF
     [ "$IF_PRESHARED" ] && echo "PresharedKey = $IF_PRESHARED" >> "/tmp/${IF_NAME}.conf.$$"
 
-    # increase the priority of ipv4
-    echo "precedence ::ffff:0:0/96  100" > /etc/gai.conf
-
     log_try_connect
     local res=$($WG setconf $IF_NAME "/tmp/${IF_NAME}.conf.$$" 2>&1)
-
-    rm -f /etc/gai.conf
     rm -f "/tmp/${IF_NAME}.conf.$$"
 
     [ "$1" = "reconnect" ] && return

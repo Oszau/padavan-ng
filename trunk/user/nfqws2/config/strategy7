@@ -10,7 +10,7 @@
 --lua-desync=fake:blob=fake_default_tls:tls_mod=rnd,dupsid,sni=yandex.net:tcp_ts=-600000
 --lua-desync=multisplit:pos=1,midsld
 --payload=http_req
---lua-desync=hostfakesplit:tcp_md5
+--lua-desync=hostfakesplit:repeats=2:tcp_md5
 
 ### quic
 --new --filter-udp=443 --filter-l7=quic <HOSTLIST_NOAUTO>
@@ -26,7 +26,7 @@
 --new --filter-tcp=* --filter-l7=mtproto
 --out-range=-n1
 --payload=mtproto_initial
---lua-desync=multidisorder:pos=1,midsld:tcp_ts_up
+--lua-desync=multidisorder:pos=1,midsld
 
 ### games
 --new --filter-udp=21000-21500,49152-65535

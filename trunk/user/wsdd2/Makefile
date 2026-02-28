@@ -2,6 +2,8 @@ SRC_VERSION = 1.8.7
 SRC_NAME = wsdd2-$(SRC_VERSION)
 SRC_URL = https://github.com/Netgear/wsdd2/archive/refs/tags/$(SRC_VERSION).tar.gz
 
+CFLAGS += $(if $(CONFIG_IPV6),-DCONFIG_IPV6,)
+
 all: download_test extract_test config_test
 	$(MAKE) -j$(HOST_NCPU) -C $(SRC_NAME)
 

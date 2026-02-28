@@ -6,7 +6,7 @@
 
 ### https, http
 --filter-tcp=443,80 --filter-l7=http,tls <HOSTLIST>
---in-range=-s5556
+--in-range=-s34228
 --lua-desync=circular:fails=1:time=300:retrans=3
 --in-range=x
 --payload=tls_client_hello
@@ -19,7 +19,7 @@
 --lua-desync=fake:blob=fake_default_tls:tls_mod=rnd,dupsid,sni=yandex.net:tcp_ts=-600000:strategy=4
 --lua-desync=multidisorder:pos=1,midsld:seqovl=821:seqovl_pattern=tls_google:strategy=4
 --payload=http_req
---lua-desync=hostfakesplit:tcp_md5:strategy=1
+--lua-desync=hostfakesplit:repeats=2:tcp_md5:strategy=1
 --lua-desync=fake:blob=fake_default_http:tcp_md5:strategy=2
 --lua-desync=multisplit:pos=method+2:strategy=2
 --lua-desync=http_methodeol:badsum:strategy=3
@@ -39,7 +39,7 @@
 --new --filter-tcp=* --filter-l7=mtproto
 --out-range=-n1
 --payload=mtproto_initial
---lua-desync=multidisorder:pos=1,midsld:tcp_ts_up
+--lua-desync=multidisorder:pos=1,midsld
 
 ### games
 --new --filter-udp=21000-21500,49152-65535

@@ -3,8 +3,8 @@
 ### http: filter all domains, exept exclude.list
 --filter-tcp=80
 --dpi-desync=hostfakesplit
---dpi-desync-hostfakesplit-mod=altorder=1
 --dpi-desync-fooling=md5sig
+--dpi-desync-repeats=2
 --hostlist-exclude=/etc/storage/zapret/exclude.list
 
 ### https: filter all domains, exept exclude.list
