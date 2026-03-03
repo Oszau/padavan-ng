@@ -82,27 +82,27 @@
 {
   "name": "ControlD: unfiltered",
   "url": "p0.freedns.controld.com",
-  "dns": "76.76.2.0"
+  "dns": "76.76.2.11"
 },
 {
   "name": "ControlD: malware",
   "url": "p1.freedns.controld.com",
-  "dns": "76.76.2.1"
+  "dns": "76.76.2.11"
 },
 {
   "name": "ControlD: + ads",
   "url": "p2.freedns.controld.com",
-  "dns": "76.76.2.2"
+  "dns": "76.76.2.11"
 },
 {
   "name": "ControlD: + social",
   "url": "p3.freedns.controld.com",
-  "dns": "76.76.2.3"
+  "dns": "76.76.2.11"
 },
 {
   "name": "ControlD: + adult",
   "url": "family.freedns.controld.com",
-  "dns": "76.76.2.4"
+  "dns": "76.76.2.11"
 },
 {
   "name": "FutureDNS",
