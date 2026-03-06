@@ -1,0 +1,29 @@
+From 24062e4f9a4d79cf34540ed6c0da95d81214aa9b Mon Sep 17 00:00:00 2001
+From: Matt Eaton <git@divinehawk.com>
+Date: Sat, 25 Oct 2025 22:16:29 +0200
+Subject: [PATCH] Fix for Linux netlink route source parameter
+
+---
+ osdep/LinuxNetLink.cpp | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/osdep/LinuxNetLink.cpp b/osdep/LinuxNetLink.cpp
+index 02c38c09a..5db7afd70 100644
+--- a/osdep/LinuxNetLink.cpp
++++ b/osdep/LinuxNetLink.cpp
+@@ -764,6 +764,7 @@ void LinuxNetLink::addRoute(const InetAddress& target, const InetAddress& via, c
+ 			memcpy(RTA_DATA(rtap), &((struct sockaddr_in6*)&src)->sin6_addr, sizeof(struct in6_addr));
+ 		}
+ 		req.rt.rtm_src_len = src.netmaskBits();
++		rtl += rtap->rta_len;
+ 	}
+ 
+ 	if (ifaceName != NULL) {
+@@ -883,6 +884,7 @@ void LinuxNetLink::delRoute(const InetAddress& target, const InetAddress& via, c
+ 			memcpy(RTA_DATA(rtap), &((struct sockaddr_in6*)&src)->sin6_addr, sizeof(struct in6_addr));
+ 		}
+ 		req.rt.rtm_src_len = src.netmaskBits();
++		rtl += rtap->rta_len;
+ 	}
+ 
+ 	if (ifaceName != NULL) {

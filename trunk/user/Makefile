@@ -85,8 +85,6 @@ dir_y =
 dir_n =
 dir_  =
 
-dir_$(CONFIG_FIRMWARE_INCLUDE_NFQWS)		+= nfqws
-dir_$(CONFIG_FIRMWARE_INCLUDE_NFQWS2)		+= nfqws2
 dir_y						+= busybox
 dir_y						+= iptables
 dir_$(CONFIG_FIRMWARE_INCLUDE_IPSET)		+= ipset
@@ -138,12 +136,17 @@ dir_y						+= samba3
 endif
 endif
 
+dir_$(CONFIG_FIRMWARE_INCLUDE_NFQWS)		+= nfqws
+dir_$(CONFIG_FIRMWARE_INCLUDE_NFQWS2)		+= nfqws2
+
+dir_$(CONFIG_FIRMWARE_INCLUDE_ZEROTIER)		+= zerotier
 dir_$(CONFIG_FIRMWARE_INCLUDE_REDSOCKS2)	+= redsocks
 dir_$(CONFIG_FIRMWARE_INCLUDE_TOR)		+= tor
 dir_$(CONFIG_FIRMWARE_INCLUDE_PRIVOXY)		+= privoxy
 dir_$(CONFIG_FIRMWARE_INCLUDE_DNSCRYPT)		+= dnscrypt-proxy
 dir_$(CONFIG_FIRMWARE_INCLUDE_STUBBY)		+= stubby
 dir_$(CONFIG_FIRMWARE_INCLUDE_DOH)		+= doh_proxy
+
 ifneq (,$(filter y,$(CONFIG_FIRMWARE_INCLUDE_XUPNPD) $(CONFIG_FIRMWARE_INCLUDE_LUA)))
 dir_y						+= lua
 dir_$(CONFIG_FIRMWARE_INCLUDE_XUPNPD)           += xupnpd

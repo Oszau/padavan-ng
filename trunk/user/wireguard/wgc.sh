@@ -305,6 +305,7 @@ check_connected()
     fi
 
     [ "$((now - lh))" -gt 15 ] && send_ping
+    [ "$((now - lh))" -gt "$TIMEOUT_OFFLINE" ] && return 1
 
     nvram settmp wg_latest_handshakes_t=$lh
 
