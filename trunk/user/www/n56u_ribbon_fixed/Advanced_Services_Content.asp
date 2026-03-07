@@ -341,7 +341,6 @@ function change_zapret_enabled(){
 	var v = document.form.zapret_enable[0].checked;
 	showhide_div('row_zapret_service', v);
 
-	if (!login_safe()) v = 0;
 	textarea_zapret_enabled(v);
 
 	let allowed_list, items_list, allowed, items;
@@ -419,9 +418,6 @@ function change_zapret_enabled(){
 }
 
 function restoreZapret(){
-	if (!login_safe())
-		return false;
-
 	if(!confirm('<#ZapretRestoreConfirm#>'))
 		return false;
 

@@ -1,4 +1,4 @@
-SRC_VER = 2.6.17
+SRC_VER = 2.6.19
 SRC_NAME = openvpn-$(SRC_VER)
 SRC_URL = https://github.com/OpenVPN/openvpn/archive/refs/tags/v$(SRC_VER).tar.gz
 
@@ -11,15 +11,14 @@ all: download_test extract_test config_test
 
 download_test:
 	( if [ ! -f $(SRC_NAME).tar.gz ]; then \
-		wget -t5 -T20 --no-check-certificate -O $(SRC_NAME).tar.gz $(SRC_URL) || rm -f $(SRC_NAME).tar.gz; \
+		wget -t5 -T20 --no-check-certificate -O $(SRC_NAME).tar.gz $(SRC_URL) \
+			|| rm -f $(SRC_NAME).tar.gz; \
 	fi )
 
 extract_test:
 	( if [ ! -d $(SRC_NAME) ]; then \
 		tar -xf $(SRC_NAME).tar.gz; \
-		find "$(shell pwd)"/patches -type f -name '*.patch' -print0 \
-		  | sort -z \
-		  | xargs -r -t -0 -n 1 patch -d $(SRC_NAME) -p1 -i; \
+		cat patches/*.patch | patch -d $(SRC_NAME) -r - -N -p1; \
 	fi )
 
 config_test:
