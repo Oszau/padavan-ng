@@ -680,7 +680,8 @@ include_masquerade(FILE *fp, char *wan_if, char *wan_ip, char *lan_net)
 	if (wan_ip)
 		if (nvram_match("nf_nat_loop", "1")) {
 		    fprintf(fp, "-A %s -o %s -s %s -j SNAT --to-source %s\n", dtype, wan_if, lan_net, wan_ip);
-		else
+		}
+		else {
 		    fprintf(fp, "-A %s -o %s ! -s %s -j MASQUERADE\n", dtype, wan_if, wan_ip);
 		}
 	else
