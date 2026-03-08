@@ -1,4 +1,4 @@
-openssl_conf		= openssl_def
+
 oid_section		= new_oids
 [ new_oids ]
 
@@ -121,14 +121,3 @@ nsComment="OpenSSL Generated Certificate"
 subjectKeyIdentifier=hash
 authorityKeyIdentifier=keyid,issuer:always
 proxyCertInfo=critical,language:id-ppl-anyLanguage,pathlen:3,policy:foo
-
-[openssl_def]
-engines=engine_section
-
-[engine_section]
-cryptodev=cryptodev_section
-
-[cryptodev_section]
-engine_id=cryptodev
-default_algorithms=ALL
-init=1
