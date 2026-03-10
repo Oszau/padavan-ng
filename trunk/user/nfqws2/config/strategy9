@@ -6,18 +6,14 @@
 
 ### https, http
 --filter-tcp=443,80 --filter-l7=http,tls <HOSTLIST>
---in-range=-s34228
+--in-range=-s5556
 --lua-desync=circular:fails=1:time=300:retrans=3
 --in-range=x
 --payload=tls_client_hello
 --lua-desync=fake:blob=fake_default_tls:tls_mod=rnd,dupsid,sni=yandex.net:tcp_ts=-600000:strategy=1
 --lua-desync=multisplit:pos=1,midsld:strategy=1
---lua-desync=fake:blob=fake_default_tls:tls_mod=rnd,dupsid,sni=yandex.net:tcp_ts=-600000:strategy=2
---lua-desync=fakeddisorder:pos=1,sniext+1,host+1,midsld-2,midsld,midsld+2,endhost-1:pattern=tls_google:seqovl=821:seqovl_pattern=tls_google:tcp_ack=-66000:tcp_ts_up:strategy=2
---lua-desync=fake:blob=fake_default_tls:tls_mod=rnd,dupsid,sni=yandex.net:tcp_ts=-600000:strategy=3
---lua-desync=hostfakesplit:host=yandex.net:midhost=host-2:seqovl=sniext+3:seqovl_pattern=tls_google:tcp_ack=-66000:tcp_ts_up:strategy=3
---lua-desync=fake:blob=fake_default_tls:tls_mod=rnd,dupsid,sni=yandex.net:tcp_ts=-600000:strategy=4
---lua-desync=multidisorder:pos=1,midsld:seqovl=821:seqovl_pattern=tls_google:strategy=4
+--lua-desync=fake:blob=fake_default_tls:tls_mod=rnd,dupsid,sni=fonts.google.com:tcp_seq=10000:strategy=2
+--lua-desync=multisplit:pos=1,midsld:strategy=2
 --payload=http_req
 --lua-desync=hostfakesplit:repeats=2:tcp_md5:strategy=1
 --lua-desync=fake:blob=fake_default_http:tcp_md5:strategy=2

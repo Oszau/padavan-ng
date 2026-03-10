@@ -7,7 +7,8 @@
 ### https, http
 --filter-tcp=443,80 --filter-l7=http,tls <HOSTLIST>
 --payload=tls_client_hello
---lua-desync=fake:blob=fake_default_tls:tls_mod=rnd,dupsid,sni=yandex.net:tcp_ts=-600000
+--lua-desync=fake:blob=fake_default_tls:tls_mod=rnd,dupsid,sni=fonts.google.com:tcp_seq=10000
+#--lua-desync=fake:blob=fake_default_tls:tls_mod=rnd,dupsid,sni=yandex.net:tcp_ts=-600000
 --lua-desync=fakeddisorder:pos=1,sniext+1,host+1,midsld-2,midsld,midsld+2,endhost-1:pattern=tls_google:seqovl=821:seqovl_pattern=tls_google:tcp_ack=-66000:tcp_ts_up
 --payload=http_req
 --lua-desync=hostfakesplit:repeats=2:tcp_md5
