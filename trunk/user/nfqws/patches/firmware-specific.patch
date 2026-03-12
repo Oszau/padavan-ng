@@ -1,5 +1,5 @@
---- zapret-71.2.orig/ip2net/Makefile
-+++ zapret-71.2/ip2net/Makefile
+--- a/ip2net/Makefile
++++ b/ip2net/Makefile
 @@ -1,6 +1,6 @@
  CC ?= cc
  OPTIMIZE ?= -Os
@@ -8,18 +8,22 @@
  CFLAGS_BSD = -Wno-address-of-packed-member
  CFLAGS_WIN = -static
  LIBS = 
---- zapret-71.2.orig/nfq/Makefile
-+++ zapret-71.2/nfq/Makefile
-@@ -1,6 +1,6 @@
+--- a/nfq/Makefile
++++ b/nfq/Makefile
+@@ -1,10 +1,8 @@
  CC ?= cc
  OPTIMIZE ?= -Os
--CFLAGS += -std=gnu99 $(OPTIMIZE) -flto=auto
-+CFLAGS += -std=gnu99 $(OPTIMIZE)
- CFLAGS_SYSTEMD = -DUSE_SYSTEMD
+-CFLAGS += -std=gnu99 $(OPTIMIZE) -flto=auto -ffunction-sections -fdata-sections
+-CFLAGS_SYSTEMD = -DUSE_SYSTEMD
++CFLAGS += -std=gnu99 $(OPTIMIZE) -ffunction-sections -fdata-sections
  CFLAGS_BSD = -Wno-address-of-packed-member
  CFLAGS_CYGWIN = -Wno-address-of-packed-member -static
---- zapret-71.2.orig/nfq/sec.c
-+++ zapret-71.2/nfq/sec.c
+-LDFLAGS += -flto=auto
+ LDFLAGS_ANDROID = -Wl,--gc-sections -llog
+ LDFLAGS_BSD = -Wl,--gc-sections
+ LDFLAGS_LINUX = -Wl,--gc-sections
+--- a/nfq/sec.c
++++ b/nfq/sec.c
 @@ -13,7 +13,7 @@
  
  #include <sys/prctl.h>
@@ -71,8 +75,8 @@
  bool checkpcap(uint64_t caps)
  {
  	if (!caps) return true; // no special caps reqd
---- zapret-71.2.orig/nfq/sec.h
-+++ zapret-71.2/nfq/sec.h
+--- a/nfq/sec.h
++++ b/nfq/sec.h
 @@ -2,11 +2,12 @@
  
  #include <sys/types.h>
@@ -98,20 +102,23 @@
 +//#define arch_nr (offsetof(struct seccomp_data, arch))
 +//#define syscall_arg(x) (offsetof(struct seccomp_data, args[x]))
  
- #if defined(__aarch64__)
- 
---- zapret-71.2.orig/tpws/Makefile
-+++ zapret-71.2/tpws/Makefile
-@@ -1,6 +1,6 @@
+ #ifndef __AUDIT_ARCH_64BIT
+ #define __AUDIT_ARCH_64BIT 0x80000000
+--- a/tpws/Makefile
++++ b/tpws/Makefile
+@@ -1,9 +1,7 @@
  CC ?= cc
  OPTIMIZE ?= -Os
--CFLAGS += -std=gnu99 $(OPTIMIZE) -flto=auto
-+CFLAGS += -std=gnu99 $(OPTIMIZE)
- CFLAGS_SYSTEMD = -DUSE_SYSTEMD
+-CFLAGS += -std=gnu99 $(OPTIMIZE) -flto=auto -ffunction-sections -fdata-sections
+-CFLAGS_SYSTEMD = -DUSE_SYSTEMD
++CFLAGS += -std=gnu99 $(OPTIMIZE) -ffunction-sections -fdata-sections
  CFLAGS_BSD = -Wno-address-of-packed-member
- LDFLAGS_ANDROID = -llog
---- zapret-71.2.orig/tpws/sec.c
-+++ zapret-71.2/tpws/sec.c
+-LDFLAGS += -flto=auto
+ LDFLAGS_ANDROID = -Wl,--gc-sections -llog
+ LDFLAGS_BSD = -Wl,--gc-sections
+ LDFLAGS_LINUX = -Wl,--gc-sections
+--- a/tpws/sec.c
++++ b/tpws/sec.c
 @@ -11,7 +11,7 @@
  
  #include <sys/prctl.h>
@@ -164,8 +171,8 @@
  }
  
  
---- zapret-71.2.orig/tpws/sec.h
-+++ zapret-71.2/tpws/sec.h
+--- a/tpws/sec.h
++++ b/tpws/sec.h
 @@ -8,7 +8,7 @@
  #ifdef __linux__
  

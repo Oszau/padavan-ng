@@ -1,7 +1,7 @@
 # https://curl.se
 
-SRC_NAME = curl-8.18.0
-SRC_URL = https://github.com/curl/curl/releases/download/curl-8_18_0/$(SRC_NAME).tar.xz
+SRC_NAME = curl-8.19.0
+SRC_URL = https://github.com/curl/curl/releases/download/curl-8_19_0/$(SRC_NAME).tar.xz
 
 ifeq ($(shell LC_ALL=C [ $(SSL_VER) '<' 3.0 ] && echo 1), 1)
 SRC_NAME = curl-8.17.0
