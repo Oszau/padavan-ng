@@ -685,6 +685,14 @@
 			{"vpnc_awg_jc", "", NULL, EVM_RESTART_VPNCLI},
 			{"vpnc_awg_jmin", "", NULL, EVM_RESTART_VPNCLI},
 			{"vpnc_awg_jmax", "", NULL, EVM_RESTART_VPNCLI},
+			{"vpnc_awg_h1", "", NULL, EVM_RESTART_VPNCLI},
+			{"vpnc_awg_h2", "", NULL, EVM_RESTART_VPNCLI},
+			{"vpnc_awg_h3", "", NULL, EVM_RESTART_VPNCLI},
+			{"vpnc_awg_h4", "", NULL, EVM_RESTART_VPNCLI},
+			{"vpnc_awg_s1", "", NULL, EVM_RESTART_VPNCLI},
+			{"vpnc_awg_s2", "", NULL, EVM_RESTART_VPNCLI},
+			{"vpnc_awg_s3", "", NULL, EVM_RESTART_VPNCLI},
+			{"vpnc_awg_s4", "", NULL, EVM_RESTART_VPNCLI},
 #endif
 #if defined(APP_OPENVPN)
 			{"vpns_ov_mode", "", NULL, EVM_RESTART_VPNSVR},

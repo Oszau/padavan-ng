@@ -822,8 +822,16 @@ struct nvram_pair router_defaults[] = {
 	{ "vpnc_awg_i4", "" },
 	{ "vpnc_awg_i5", "" },
 	{ "vpnc_awg_jc", "4" },
-	{ "vpnc_awg_jmin", "0" },
+	{ "vpnc_awg_jmin", "16" },
 	{ "vpnc_awg_jmax", "64" },
+	{ "vpnc_awg_h1", "1" },
+	{ "vpnc_awg_h2", "2" },
+	{ "vpnc_awg_h3", "3" },
+	{ "vpnc_awg_h4", "4" },
+	{ "vpnc_awg_s1", "0" },
+	{ "vpnc_awg_s2", "0" },
+	{ "vpnc_awg_s3", "0" },
+	{ "vpnc_awg_s4", "0" },
 #endif
 	{ 0, 0 }
 };

@@ -677,7 +677,7 @@ function wg_conf_import() {
 		if (found_app_awg()) {
 			loadJSON('amneziawg.json')
 				.then(data => {
-					const fields = ['jc', 'jmin', 'jmax', 'i1', 'i2', 'i3', 'i4', 'i5'];
+					const fields = ['jc', 'jmin', 'jmax', 'i1', 'i2', 'i3', 'i4', 'i5', 'h1', 'h2', 'h3', 'h4', 's1', 's2', 's3', 's4'];
 					fields.forEach(field => {
 						document.form[`vpnc_awg_${field}`].value = settings[field] || data[0][field] || '';
 					});
@@ -1173,56 +1173,124 @@ function vpnc_access_control() {
                                     <th colspan="2" style="background-color: #E3E3E3;"><#AmneziaWG_Params#></th>
                                 </tr>
                                 <tr>
-                                    <th width="50%">Jc, <#AmneziaWG_Jc#>:</th>
-                                    <td>
-                                        <input name="vpnc_awg_jc" value="<% nvram_get_x("", "vpnc_awg_jc"); %>">
-                                        &nbsp;<span style="color:#888;">[ 0..10 ]</span>
+                                    <td colspan="2" style="padding-left: 0px; padding-right: 0px">
+                                        <a href="javascript:spoiler_toggle('spoiler_vpnc_amnezia_junk')"><span style="padding-left: 8px"><#AmneziaWG_JunkPackets#>:</span> <i style="scale: 75%;" class="icon-chevron-down"></i></a>
+                                        <table width="100%" id="spoiler_vpnc_amnezia_junk" style="display: none; border: 0px">
+
+                                            <tr>
+                                                <th style="border: 0px" width="50%">Jc, <#AmneziaWG_Jc#>:</th>
+                                                <td style="border: 0px">
+                                                    <input name="vpnc_awg_jc" value="<% nvram_get_x("", "vpnc_awg_jc"); %>">
+                                                    &nbsp;<span style="color:#888;">[ 0..10 ]</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th width="50%">Jmin, <#AmneziaWG_Jmin#>:</th>
+                                                <td>
+                                                    <input name="vpnc_awg_jmin" value="<% nvram_get_x("", "vpnc_awg_jmin"); %>">
+                                                    &nbsp;<span style="color:#888;">[ 0..1024 ]</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th style="padding-bottom: 0px" width="50%">Jmax, <#AmneziaWG_Jmax#>:</th>
+                                                <td style="padding-bottom: 0px">
+                                                    <input name="vpnc_awg_jmax" value="<% nvram_get_x("", "vpnc_awg_jmax"); %>">
+                                                    &nbsp;<span style="color:#888;">[ Jmax > Jmin ]</span>
+                                                </td>
+                                            </tr>
+                                        </table>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <th width="50%">Jmin, <#AmneziaWG_Jmin#>:</th>
-                                    <td>
-                                        <input name="vpnc_awg_jmin" value="<% nvram_get_x("", "vpnc_awg_jmin"); %>">
-                                        &nbsp;<span style="color:#888;">[ 0..1024 ]</span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th width="50%">Jmax, <#AmneziaWG_Jmax#>:</th>
-                                    <td>
-                                        <input name="vpnc_awg_jmax" value="<% nvram_get_x("", "vpnc_awg_jmax"); %>">
-                                        &nbsp;<span style="color:#888;">[ Jmax > Jmin ]</span>
+                                    <td colspan="2" style="padding-left: 0px; padding-right: 0px">
+                                        <a href="javascript:spoiler_toggle('spoiler_vpnc_amnezia_headers')"><span style="padding-left: 8px"><#AmneziaWG_HeadersMod#>:</span> <i style="scale: 75%;" class="icon-chevron-down"></i></a>
+                                        <table width="100%" id="spoiler_vpnc_amnezia_headers" style="display: none; border: 0px">
+
+                                            <tr>
+                                                <th style="border: 0px" width="50%">Init header, H1:</th>
+                                                <td style="border: 0px">
+                                                    <input name="vpnc_awg_h1" value="<% nvram_get_x("", "vpnc_awg_h1"); %>">
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Response header, H2:</th>
+                                                <td>
+                                                    <input name="vpnc_awg_h2" value="<% nvram_get_x("", "vpnc_awg_h2"); %>">
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Cookie header, H3:</th>
+                                                <td>
+                                                    <input name="vpnc_awg_h3" value="<% nvram_get_x("", "vpnc_awg_h3"); %>">
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Data header, H4:</th>
+                                                <td>
+                                                    <input name="vpnc_awg_h4" value="<% nvram_get_x("", "vpnc_awg_h4"); %>">
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Init random increment, S1:</th>
+                                                <td>
+                                                    <input name="vpnc_awg_s1" value="<% nvram_get_x("", "vpnc_awg_s1"); %>">
+                                                    &nbsp;<span style="color:#888;">[ 0..256 ]</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Response random increment, S2:</th>
+                                                <td>
+                                                    <input name="vpnc_awg_s2" value="<% nvram_get_x("", "vpnc_awg_s2"); %>">
+                                                    &nbsp;<span style="color:#888;">[ 0..256 ]</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Cookie random increment, S3:</th>
+                                                <td>
+                                                    <input name="vpnc_awg_s3" value="<% nvram_get_x("", "vpnc_awg_s3"); %>">
+                                                    &nbsp;<span style="color:#888;">[ 0..256 ]</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th style="padding-bottom: 0px">Data random increment, S4:</th>
+                                                <td style="padding-bottom: 0px">
+                                                    <input name="vpnc_awg_s4" value="<% nvram_get_x("", "vpnc_awg_s4"); %>">
+                                                    &nbsp;<span style="color:#888;">[ 0..32 ]</span>
+                                                </td>
+                                            </tr>
+                                        </table>
                                     </td>
                                 </tr>
 
                                 <tr>
-                                    <td colspan="2" style="padding-bottom: 0px">
-                                        <a href="javascript:spoiler_toggle('spoiler_vpnc_amnezia_i1')"><span><#AmneziaWG_ObfuscationProto#>:</span> <i style="scale: 75%;" class="icon-chevron-down"></i></a>
-                                        <table width="100%" id="spoiler_vpnc_amnezia_i1" style="display: none; border: 0px">
+                                    <td colspan="2" style="padding: 0px; padding-top: 8px">
+                                        <a href="javascript:spoiler_toggle('spoiler_vpnc_amnezia_i1')"><span style="padding-left: 8px"><#AmneziaWG_ObfuscationProto#>:</span> <i style="scale: 75%;" class="icon-chevron-down"></i></a>
+                                        <table width="100%" id="spoiler_vpnc_amnezia_i1" style="display: none; border: 0px;">
                                             <tr>
-                                                <td colspan="2" style="padding-left: 0px; padding-right: 0px; border: 0px">
+                                                <td colspan="2" style="border: 0px">
                                                     <textarea rows="8" wrap="on" spellcheck="false" maxlength="4096" class="span12" name="vpnc_awg_i1" style="font-family:'Courier New'; font-size:12px; resize:vertical;"><% nvram_get_x("", "vpnc_awg_i1"); %></textarea>
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <th style="padding: 0px" width="50%"><#AmneziaWG_Obfuscation#> 2:</th>
+                                                <th width="50%"><#AmneziaWG_Obfuscation#> 2:</th>
                                                 <td>
                                                     <input type="text" name="vpnc_awg_i2" class="input" maxlength="256" size="32" value="<% nvram_get_x("", "vpnc_awg_i2"); %>" onKeyPress="return is_string(this,event);"/>
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <th style="padding: 0px" width="50%"><#AmneziaWG_Obfuscation#> 3:</th>
+                                                <th><#AmneziaWG_Obfuscation#> 3:</th>
                                                 <td>
                                                     <input type="text" name="vpnc_awg_i3" class="input" maxlength="256" size="32" value="<% nvram_get_x("", "vpnc_awg_i3"); %>" onKeyPress="return is_string(this,event);"/>
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <th style="padding: 0px" width="50%"><#AmneziaWG_Obfuscation#> 4:</th>
+                                                <th><#AmneziaWG_Obfuscation#> 4:</th>
                                                 <td>
                                                     <input type="text" name="vpnc_awg_i4" class="input" maxlength="256" size="32" value="<% nvram_get_x("", "vpnc_awg_i4"); %>" onKeyPress="return is_string(this,event);"/>
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <th style="padding: 8px 0px 0px" width="50%"><#AmneziaWG_Obfuscation#> 5:</th>
+                                                <th style="padding-bottom: 0px"><#AmneziaWG_Obfuscation#> 5:</th>
                                                 <td style="padding-bottom: 0px">
                                                     <input type="text" name="vpnc_awg_i5" class="input" maxlength="256" size="32" value="<% nvram_get_x("", "vpnc_awg_i5"); %>" onKeyPress="return is_string(this,event);"/>
                                                 </td>

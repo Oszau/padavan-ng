@@ -120,7 +120,7 @@ setconf_wg()
         cps()
         {
             local i nv
-            for i in jc jmin jmax i1 i2 i3 i4 i5; do
+            for i in jc jmin jmax i1 i2 i3 i4 i5 h1 h2 h3 h4 s1 s2 s3 s4; do
                 nv=$(nvram get vpnc_awg_$i | tr -d '\n\r')
                 [ -n "$nv" ] && echo "$i = $nv"
             done
