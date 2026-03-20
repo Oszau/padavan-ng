@@ -1,6 +1,6 @@
 # https://github.com/nghttp2/nghttp2
 
-SRC_VER = 1.68.0
+SRC_VER = 1.68.1
 SRC_NAME = nghttp2-$(SRC_VER)
 SRC_URL = https://github.com/nghttp2/nghttp2/releases/download/v$(SRC_VER)/$(SRC_NAME).tar.xz
 
@@ -19,9 +19,7 @@ download_test:
 extract_test:
 	( if [ ! -d $(SRC_NAME) ]; then \
 		tar --xz -xf $(SRC_NAME).tar.xz; \
-		find "$(shell pwd)"/patches -type f -name '*.patch' -print0 \
-		    | sort -z \
-		    | xargs -r -t -0 -n 1 patch -d $(SRC_NAME) -p1 -i; \
+		cat patches/*.patch | patch -d $(SRC_NAME) -r - -N -p1; \
 	fi )
 
 config_test:
