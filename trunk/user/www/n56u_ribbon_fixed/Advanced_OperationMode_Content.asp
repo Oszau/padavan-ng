@@ -20,7 +20,7 @@ var $j = jQuery.noConflict();
 
 function initial(){
 	show_banner(2);
-	show_menu(5,7,3);
+	show_menu(5,8,2);
 	show_footer();
 
 	if(sw_mode == '1' || sw_mode == '3'){
@@ -151,17 +151,15 @@ table td {text-align: center; }
                             <div class="round_bottom">
                                 <div class="row-fluid">
                                     <div id="tabMenu" class="submenuBlock"></div>
-                                        <div style="margin-left: 10px; margin-top: 10px;">
-                                            <div class="controls">
+                                        <div id="mode_desc" style="margin: 10px" class="alert alert-info"><#OP_GW_desc1#></div>
+
+                                        <div class="controls" style="margin: 10px">
                                                 <label class="radio inline"><div id="wl_rt" style="display:none;"><input type="radio" name="sw_mode" class="input" value="1" onclick="setScenerion(1);" <% nvram_match_x("IPConnection", "sw_mode", "1", "checked"); %>><#OP_GW_item#></div></label>
                                                 <label class="radio inline"><div id="rt_wo_nat" style="display:none;"><input type="radio" name="sw_mode" class="input" value="4" onclick="setScenerion(4);" <% nvram_match_x("IPConnection", "sw_mode", "4", "checked"); %>><#OP_GW_item#></div></label>
                                                 <label class="radio inline"><div id="wl_ap"><input type="radio" name="sw_mode" class="input" value="3" onclick="setScenerion(3);" <% nvram_match_x("IPConnection", "sw_mode", "3", "checked"); %>><#OP_AP_item#></div></label>
-                                            </div>
-
-                                            <div id="mode_desc" style="margin-left: 0px; margin-top: 10px; margin-right: 10px;" class="alert alert-info"><#OP_GW_desc1#></div>
                                         </div>
 
-                                        <div style="margin-top: 10px; margin-right: 10px; margin-left: 10px;">
+                                        <div style="margin-top: 18px; margin-right: 10px; margin-left: 10px;">
                                             <center><div id="Senario" class="span12" style="height: 170px;">
                                                 <div class="row-fluid">
                                                     <table style="width: 100%">

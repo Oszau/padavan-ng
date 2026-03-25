@@ -957,6 +957,9 @@ set_libc_gai(int ipv4_first)
 			fclose(fp);
 		}
 	} else {
-		unlink("/etc/gai.conf");
+#if defined (USE_IPV6)
+		if (nvram_get_int("dns_ipv4_priority") == 0)
+#endif
+			unlink("/etc/gai.conf");
 	}
 }

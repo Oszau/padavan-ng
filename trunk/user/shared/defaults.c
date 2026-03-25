@@ -481,6 +481,24 @@ struct nvram_pair router_defaults[] = {
 	{ "dhcp_end", DEF_LAN_DHCP_END },	/* Last assignable DHCP address */
 	{ "dhcp_enable_x", "1" },
 	{ "dhcp_lease", "86400" },
+	{ "dhcp_all_servers", "1" },
+	{ "dhcp_strict_order", "0" },
+	{ "dhcp_filter_aaaa", "0" },
+	{ "dns_ipv4_priority", "0" },
+	{ "force_redirect_dns", "0" },
+
+#if BOARD_RAM_SIZE > 128
+	{ "dhcp_cache_size", "1536" },
+#elif BOARD_RAM_SIZE > 64
+	{ "dhcp_cache_size", "1024" },
+#elif BOARD_RAM_SIZE > 32
+	{ "dhcp_cache_size", "512" },
+#elif BOARD_RAM_SIZE > 16
+	{ "dhcp_cache_size", "256" },
+#else
+	{ "dhcp_cache_size", "160" },
+#endif
+
 	{ "dhcp_gateway_x", "" },
 	{ "dhcp_dns1_x", "" },
 	{ "dhcp_dns2_x", "" },
@@ -590,21 +608,28 @@ struct nvram_pair router_defaults[] = {
 	{ "wins_enable", "0" },
 #if defined (APP_DOH)
 	{ "doh_enable", "0" },
-	{ "doh_server1", "https://dns.google/dns-query" },
+	{ "doh_server0", "https://dns.google/dns-query" },
+	{ "doh_server1", "" },
 	{ "doh_server2", "" },
 	{ "doh_server3", "" },
-	{ "doh_server_ip1", "1.1.1.1,8.8.8.8,9.9.9.9,208.67.222.222,77.88.8.8" },
-	{ "doh_server_ip2", "" },
-	{ "doh_server_ip3", "" },
+	{ "doh_bootstrap_dns", "1.1.1.1,8.8.8.8,9.9.9.9,208.67.222.222,77.88.8.8" },
+	{ "doh_listen_port", "5053" },
+	{ "doh_listen_mode", "0" },
+	{ "doh_mode", "1" },
 #endif
 #if defined (APP_STUBBY)
 	{ "stubby_enable", "0" },
-	{ "stubby_server1", "dns.google" },
+	{ "stubby_server0", "dns.google" },
+	{ "stubby_server1", "" },
 	{ "stubby_server2", "" },
 	{ "stubby_server3", "" },
-	{ "stubby_server_ip1", "8.8.8.8" },
+	{ "stubby_server_ip0", "8.8.8.8" },
+	{ "stubby_server_ip1", "" },
 	{ "stubby_server_ip2", "" },
-	{ "stubby_server_ip3", "" },
+	{ "stubby_listen_port", "5453" },
+	{ "stubby_listen_mode", "0" },
+	{ "stubby_round_robin", "1" },
+	{ "stubby_mode", "1" },
 #endif
 #if defined (APP_ZAPRET)
 	{ "zapret_enable", "0" },
@@ -628,11 +653,13 @@ struct nvram_pair router_defaults[] = {
 #endif
 #if defined (APP_DNSCRYPT)
 	{ "dnscrypt_enable", "0" },
-	{ "dnscrypt_resolver", "cisco" },
-	{ "dnscrypt_ipaddr", "127.0.0.1" },
-	{ "dnscrypt_port", "65053" },
-	{ "dnscrypt_force_dns", "0" },
-	{ "dnscrypt_options", "-e 4096 -S -m 0" },
+	{ "dnscrypt_resolver0", "cisco" },
+	{ "dnscrypt_resolver1", "" },
+	{ "dnscrypt_resolver2", "" },
+	{ "dnscrypt_resolver3", "" },
+	{ "dnscrypt_listen_mode", "0" },
+	{ "dnscrypt_listen_port", "65053" },
+	{ "dnscrypt_mode", "1" },
 #endif
 	{ "lltd_enable", "1" },
 	{ "adsc_enable", "0" },

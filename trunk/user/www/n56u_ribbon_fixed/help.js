@@ -21,7 +21,13 @@ helpcontent[5] = new Array("",
 				"<#LANHostConfig_x_LDNSServer1_itemdesc#>",
 				"<#LANHostConfig_x_LDNSServer1_itemdesc#>",
 				"<#LANHostConfig_x_WINSServer_itemdesc#>",
-				"<#LANHostConfig_ManualDHCPEnable_itemdesc#>");
+				"<#LANHostConfig_ManualDHCPEnable_itemdesc#>",
+				"<#LANHostConfig_CacheSize_itemdesc#>",
+				"<#LANHostConfig_DHCPAllservers_itemdesc#>",
+				"<#LANHostConfig_DHCPStrictorder_itemdesc#>",
+				"<#LANHostConfig_DHCPFilterAAAA_itemdesc#>",
+				"<#LANHostConfig_DNSIPV4Priority_itemdesc#>",
+				"<#LANHostConfig_ForceDNS_itemdesc#>");
 helpcontent[6] = new Array("",
 				"<#RHELP_desc4#>",
 				"<#RHELP_desc5#>",
@@ -177,11 +183,11 @@ helpcontent[24] = new Array("",
 // Anonymity and content filtering
 helpcontent[25] = new Array("",
 				"<#Adm_Svc_dnscrypt_desc#>",
-				"<#Adm_Svc_dnscrypt_force_dns_desc#>",
-				"<#Adm_Svc_dnscrypt_options_desc#>",
 				"<#Adm_Svc_zapret_desc#>",
 				"<#Adm_Svc_doh_desc#>",
-				"<#Adm_Svc_stubby_desc#>");
+				"<#Service_Stubby_Desc#>",
+				"<#Service_Stubby_Mode_Desc#>",
+				"<#Service_DNSCrypt_Mode_Desc#>");
 
 // VPN
 helpcontent[26] = new Array("",

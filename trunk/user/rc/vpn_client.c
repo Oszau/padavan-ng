@@ -89,6 +89,12 @@ start_vpn_client(void)
 	if (i_type == 2)
 		return start_openvpn_client();
 #endif
+
+	if (i_type > 1) {
+		nvram_set_int("vpnc_enable", 0);
+		return 1;
+	}
+
 	vpnc_opt = VPN_CLIENT_PPPD_OPTIONS;
 
 	mkdir("/tmp/ppp", 0777);

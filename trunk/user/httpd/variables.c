@@ -484,6 +484,12 @@
 			{"dhcp_start", "", NULL, EVM_RESTART_DHCPD},
 			{"dhcp_end", "", NULL, EVM_RESTART_DHCPD},
 			{"dhcp_lease", "", NULL, EVM_RESTART_DHCPD},
+			{"dhcp_all_servers", "", NULL, EVM_RESTART_DHCPD},
+			{"dhcp_strict_order", "", NULL, EVM_RESTART_DHCPD},
+			{"dhcp_filter_aaaa", "", NULL, EVM_RESTART_DHCPD},
+			{"dns_ipv4_priority", "", NULL, EVM_RESTART_DHCPD},
+			{"force_redirect_dns", "", NULL, EVM_RELOAD_FIREWALL},
+			{"dhcp_cache_size", "", NULL, EVM_RESTART_DHCPD},
 			{"dhcp_gateway_x", "", NULL, EVM_RESTART_DHCPD},
 			{"dhcp_dns1_x", "", NULL, EVM_RESTART_DHCPD|EVM_REAPPLY_VPNSVR},
 			{"dhcp_dns2_x", "", NULL, EVM_RESTART_DHCPD|EVM_REAPPLY_VPNSVR},
@@ -514,21 +520,29 @@
 			{"sshd_enable_gp", "", NULL, EVM_RESTART_SSHD},
 #if defined(APP_DOH)
 			{"doh_enable", "", NULL, EVM_RESTART_DOH|EVM_RESTART_DHCPD},
+			{"doh_server0", "", NULL, EVM_RESTART_DOH|EVM_RESTART_DHCPD},
 			{"doh_server1", "", NULL, EVM_RESTART_DOH|EVM_RESTART_DHCPD},
 			{"doh_server2", "", NULL, EVM_RESTART_DOH|EVM_RESTART_DHCPD},
 			{"doh_server3", "", NULL, EVM_RESTART_DOH|EVM_RESTART_DHCPD},
-			{"doh_server_ip1", "", NULL, EVM_RESTART_DOH},
-			{"doh_server_ip2", "", NULL, EVM_RESTART_DOH},
-			{"doh_server_ip3", "", NULL, EVM_RESTART_DOH},
+			{"doh_bootstrap_dns", "", NULL, EVM_RESTART_DOH|EVM_RESTART_DHCPD},
+			{"doh_listen_port", "", NULL, EVM_RESTART_DOH|EVM_RESTART_DHCPD},
+			{"doh_listen_mode", "", NULL, EVM_RESTART_DOH|EVM_RESTART_DHCPD},
+			{"doh_mode", "", NULL, EVM_RESTART_DOH|EVM_RESTART_DHCPD},
 #endif
 #if defined(APP_STUBBY)
 			{"stubby_enable", "", NULL, EVM_RESTART_STUBBY|EVM_RESTART_DHCPD},
-			{"stubby_server1", "", NULL, EVM_RESTART_STUBBY|EVM_RESTART_DHCPD},
-			{"stubby_server2", "", NULL, EVM_RESTART_STUBBY|EVM_RESTART_DHCPD},
-			{"stubby_server3", "", NULL, EVM_RESTART_STUBBY|EVM_RESTART_DHCPD},
+			{"stubby_server0", "", NULL, EVM_RESTART_STUBBY},
+			{"stubby_server1", "", NULL, EVM_RESTART_STUBBY},
+			{"stubby_server2", "", NULL, EVM_RESTART_STUBBY},
+			{"stubby_server3", "", NULL, EVM_RESTART_STUBBY},
+			{"stubby_server_ip0", "", NULL, EVM_RESTART_STUBBY},
 			{"stubby_server_ip1", "", NULL, EVM_RESTART_STUBBY},
 			{"stubby_server_ip2", "", NULL, EVM_RESTART_STUBBY},
 			{"stubby_server_ip3", "", NULL, EVM_RESTART_STUBBY},
+			{"stubby_listen_port", "", NULL, EVM_RESTART_STUBBY|EVM_RESTART_DHCPD},
+			{"stubby_listen_mode", "", NULL, EVM_RESTART_STUBBY|EVM_RESTART_DHCPD},
+			{"stubby_round_robin", "", NULL, EVM_RESTART_STUBBY},
+			{"stubby_mode", "", NULL, EVM_RESTART_STUBBY|EVM_RESTART_DHCPD},
 #endif
 #if defined(APP_ZAPRET)
 			{"zapret_enable", "", NULL, EVM_RESTART_ZAPRET},
@@ -572,11 +586,13 @@
 #endif
 #if defined(APP_DNSCRYPT)
 			{"dnscrypt_enable", "", NULL, EVM_RESTART_DNSCRYPT|EVM_RESTART_DHCPD},
-			{"dnscrypt_resolver", "", NULL, EVM_RESTART_DNSCRYPT|EVM_RESTART_DHCPD},
-			{"dnscrypt_ipaddr", "", NULL, EVM_RESTART_DNSCRYPT|EVM_RESTART_DHCPD},
-			{"dnscrypt_port", "", NULL, EVM_RESTART_DNSCRYPT|EVM_RESTART_DHCPD},
-			{"dnscrypt_force_dns", "", NULL, EVM_RESTART_FIREWALL},
-			{"dnscrypt_options", "", NULL, EVM_RESTART_DNSCRYPT},
+			{"dnscrypt_resolver0", "", NULL, EVM_RESTART_DNSCRYPT|EVM_RESTART_DHCPD},
+			{"dnscrypt_resolver1", "", NULL, EVM_RESTART_DNSCRYPT|EVM_RESTART_DHCPD},
+			{"dnscrypt_resolver2", "", NULL, EVM_RESTART_DNSCRYPT|EVM_RESTART_DHCPD},
+			{"dnscrypt_resolver3", "", NULL, EVM_RESTART_DNSCRYPT|EVM_RESTART_DHCPD},
+			{"dnscrypt_listen_mode", "", NULL, EVM_RESTART_DNSCRYPT|EVM_RESTART_DHCPD},
+			{"dnscrypt_listen_port", "", NULL, EVM_RESTART_DNSCRYPT|EVM_RESTART_DHCPD},
+			{"dnscrypt_mode", "", NULL, EVM_RESTART_DNSCRYPT|EVM_RESTART_DHCPD},
 #endif
 #if defined (SUPPORT_WPAD)
 			{"scripts.wpad.dat", "File", NULL, EVM_BLOCK_UNSAFE},
@@ -1085,6 +1101,7 @@
 		{EVM_RESTART_NMBD,		EVT_RESTART_NMBD,		RCN_RESTART_NMBD,	0},
 #endif
 		{EVM_RESTART_FIREWALL,		EVT_RESTART_FIREWALL,		RCN_RESTART_FIREWALL,	0},
+		{EVM_RELOAD_FIREWALL,		EVT_RELOAD_FIREWALL,		RCN_RELOAD_FIREWALL,	0},
 		{0,0,0,0}
 	};
 

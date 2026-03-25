@@ -265,7 +265,7 @@ function change_ip6_service(){
 
 	showhide_div('row_wan_type', ip6on);
 	showhide_div('row_wan_if', (pppif && ip6on));
-	showhide_div('tbl_ip6_wan', ip6on);
+	showhide_div('tbl_ip6_wan', ip6on && (ip6_con!="6to4"));
 	showhide_div('tbl_ip6_dns', ip6on);
 	showhide_div('tbl_ip6_lan', ip6on);
 

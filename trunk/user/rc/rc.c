@@ -1408,7 +1408,7 @@ handle_notifications(void)
 			reload_nat_modules();
 			restart_firewall();
 		}
-		else if (strcmp(entry->d_name, "restart_firewall_wan") == 0)
+		else if (strcmp(entry->d_name, RCN_RELOAD_FIREWALL) == 0)
 		{
 			restart_firewall();
 		}

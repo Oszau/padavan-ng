@@ -294,13 +294,14 @@ start_dns_dhcpd(int is_ap_mode)
 	FILE *fp;
 	int i_verbose, i_dhcp_enable, is_dhcp_used, is_dns_used, no_resolv;
 	char dhcp_start[32], dhcp_end[32], dns_all[64], nvram_key[32];
-	char *ipaddr, *netmask, *gw, *dns1, *dns2, *dns3, *wins, *domain, *srv_addr[2];
+	char *ipaddr, *ipaddr_t, *netmask, *gw, *dns1, *dns2, *dns3, *wins, *domain, *srv_addr[2], *dnsproxy_listen_addr;
 	const char *storage_dir = "/etc/storage/dnsmasq";
 
 	i_dhcp_enable = is_dhcpd_enabled(is_ap_mode);
 	i_verbose = nvram_get_int("dhcp_verbose");
 
 	ipaddr  = nvram_safe_get("lan_ipaddr");
+	ipaddr_t  = nvram_safe_get("lan_ipaddr_t");
 	netmask = nvram_safe_get("lan_netmask");
 	domain  = nvram_safe_get("lan_domain");
 
@@ -316,6 +317,16 @@ start_dns_dhcpd(int is_ap_mode)
 		
 		/* touch resolv.conf if not exist */
 		create_file(DNS_RESOLV_CONF);
+
+#if defined (USE_IPV6)
+		if (nvram_get_int("dns_ipv4_priority") == 1) {
+			if ((fp = fopen("/etc/gai.conf", "w"))) {
+				fprintf(fp, "precedence %s\n", "::ffff:0:0/96 100");
+				fclose(fp);
+			}
+		} else
+			unlink("/etc/gai.conf");
+#endif
 	}
 
 	/* create /etc/dnsmasq.conf */
@@ -338,19 +349,34 @@ start_dns_dhcpd(int is_ap_mode)
 		/* listen DNS queries from clients of VPN server */
 		fprintf(fp, "listen-address=%s\n", ipaddr);
 
-		/* don't use resolv-file to resovle DNS queries if doh_proxy or stubby or dnscrypt-proxy is enabled */
+		/* don't use resolv-file to resovle DNS queries if doh_proxy, stubby or dnscrypt-proxy is enabled */
 		no_resolv = 0;
 #if defined(APP_DNSCRYPT)
-		if (nvram_match("dnscrypt_enable", "1" ))
+		if (nvram_match("dnscrypt_enable", "1" ) && nvram_match("dnscrypt_mode", "1"))
 		{
-			fprintf(fp, "server=%s#%d\n", nvram_safe_get("dnscrypt_ipaddr"), nvram_get_int("dnscrypt_port"));
-			no_resolv = 1;
+			dnsproxy_listen_addr = "127.0.0.1";
+			if (nvram_get_int("dnscrypt_listen_mode") == 1)
+				dnsproxy_listen_addr = ipaddr_t;
+
+			for (int i = 0; i <= 3; i++)
+			{
+				snprintf(nvram_key, sizeof(nvram_key), "dnscrypt_resolver%d", i);
+				if ( strlen(nvram_safe_get(nvram_key)) > 2 )
+				{
+					fprintf(fp, "server=%s#%d\n", dnsproxy_listen_addr, nvram_get_int("dnscrypt_listen_port") + i);
+					no_resolv = 1;
+				}
+			}
 		}
 #endif
 #if defined(APP_STUBBY)
-		if (nvram_match("stubby_enable", "1"))
+		if (nvram_match("stubby_enable", "1") && (nvram_match("stubby_mode", "1" ) || nvram_match("stubby_mode", "3" )))
 		{
-			for (int i = 1; i <= 3; i++)
+			dnsproxy_listen_addr = "127.0.0.1";
+			if (nvram_get_int("stubby_listen_mode") == 1)
+				dnsproxy_listen_addr = ipaddr_t;
+
+			for (int i = 0; i <= 3; i++)
 			{
 				snprintf(nvram_key, sizeof(nvram_key), "stubby_server%d", i);
 				srv_addr[0] = nvram_safe_get(nvram_key);
@@ -358,7 +384,7 @@ start_dns_dhcpd(int is_ap_mode)
 				srv_addr[1] = nvram_safe_get(nvram_key);
 				if ( strlen(srv_addr[0]) > 2 && strlen(srv_addr[1]) > 6)
 				{
-					fprintf(fp, "server=127.0.0.1#65054\n");
+					fprintf(fp, "server=%s#%d\n", dnsproxy_listen_addr, nvram_get_int("stubby_listen_port"));
 					no_resolv = 1;
 					break;
 				}
@@ -366,15 +392,18 @@ start_dns_dhcpd(int is_ap_mode)
 		}
 #endif
 #if defined(APP_DOH)
-		if (nvram_match("doh_enable", "1"))
+		if (nvram_match("doh_enable", "1" ) && nvram_match("doh_mode", "1"))
 		{
-			// ports 65055-65057 for doh
-			for (int i = 1; i <= 3; i++)
+			dnsproxy_listen_addr = "127.0.0.1";
+			if (nvram_get_int("doh_listen_mode") == 1)
+				dnsproxy_listen_addr = ipaddr_t;
+
+			for (int i = 0; i <= 3; i++)
 			{
 				snprintf(nvram_key, sizeof(nvram_key), "doh_server%d", i);
 				if ( strlen(nvram_safe_get(nvram_key)) > 2 )
 				{
-					fprintf(fp, "server=127.0.0.1#%d\n", 65054 + i);
+					fprintf(fp, "server=%s#%d\n", dnsproxy_listen_addr, nvram_get_int("doh_listen_port") + i);
 					no_resolv = 1;
 				}
 			}
@@ -406,11 +435,25 @@ start_dns_dhcpd(int is_ap_mode)
 			}
 		}
 
-		fprintf(fp, "all-servers\n");
+		/* DNS queries for all servers */
+		if (!is_ap_mode && nvram_match("dhcp_all_servers", "1")) {
+			fprintf(fp, "all-servers\n");
+		}
 
+		/* Name servers strictly in the order listed */
+		if (!is_ap_mode && nvram_match("dhcp_strict_order", "1")) {
+			fprintf(fp, "strict-order\n");
+		}
+
+#if defined (USE_IPV6)
+		/* Don't include IPv6 addresses in DNS answers */
+		if (!is_ap_mode && nvram_match("dhcp_filter_aaaa", "1")) {
+			fprintf(fp, "filter-AAAA\n");
+		}
+#endif
 		is_dns_used = 1;
 		fprintf(fp, "min-port=%d\n", 4096);
-		fprintf(fp, "cache-size=%d\n", DNS_RELAY_CACHE_MAX);
+		fprintf(fp, "cache-size=%d\n", nvram_get_int("dhcp_cache_size"));
 		fprintf(fp, "dns-forward-max=%d\n", DNS_RELAY_QUERIES_MAX);
 		fprintf(fp, "addn-hosts=%s/hosts\n", storage_dir);
 		fprintf(fp, "servers-file=%s\n", DNS_SERVERS_FILE);

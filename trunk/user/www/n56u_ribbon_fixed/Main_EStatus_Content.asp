@@ -27,7 +27,7 @@ $j(window).bind('hashchange', function(){
 
 function initial(){
 	show_banner(1);
-	show_menu(5,9,get_page_id());
+	show_menu(5,10,get_page_id());
 	show_footer();
 	update_page();
 	set_mib_data();

@@ -181,6 +181,11 @@ start_vpn_server(void)
 		return start_wireguard_server();
 #endif
 
+	if (i_type > 1) {
+		nvram_set_int("vpns_enable", 0);
+		return 1;
+	}
+
 	mkdir("/tmp/ppp", 0777);
 	symlink("/sbin/rc", VPNS_PPP_UP_SCRIPT);
 	symlink("/sbin/rc", VPNS_PPP_DW_SCRIPT);

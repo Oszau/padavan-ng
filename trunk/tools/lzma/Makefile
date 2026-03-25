@@ -1,6 +1,6 @@
 # https://www.7-zip.org
 
-SRC_VER = 25.01
+SRC_VER = 26.00
 SRC_NAME = 7zip-$(SRC_VER)
 SRC_URL = https://github.com/ip7z/7zip/archive/refs/tags/$(SRC_VER).tar.gz
 

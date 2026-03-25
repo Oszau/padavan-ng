@@ -257,8 +257,8 @@ function done_validating(action){
 
                                     <table width="100%" align="center" cellpadding="4" cellspacing="0" class="table">
                                         <tr>
-                                            <th width="50%"><#LANHostConfig_x_LANDHCPClient_itemname#></th>
-                                            <td>
+                                            <th width="50%" style="border: none"><#LANHostConfig_x_LANDHCPClient_itemname#></th>
+                                            <td style="border: none">
                                                 <div class="main_itoggle">
                                                     <div id="lan_proto_x_on_of">
                                                         <input type="checkbox" id="lan_proto_x_fake" <% nvram_match_x("", "lan_proto_x", "1", "value=1 checked"); %><% nvram_match_x("", "lan_proto_x", "0", "value=0"); %>>

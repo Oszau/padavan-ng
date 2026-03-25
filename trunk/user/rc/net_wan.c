@@ -1243,7 +1243,7 @@ man_up(char *man_ifname, int unit, int is_static)
 		update_resolvconf(0, 0);
 		
 		/* re-start firewall */
-		notify_rc("restart_firewall_wan");
+		notify_rc(RCN_RELOAD_FIREWALL);
 	}
 
 	/* start multicast router */
@@ -1338,7 +1338,7 @@ wan_up(char *wan_ifname, int unit, int is_static)
 
 	if (!is_static) {
 		/* re-start firewall */
-		notify_rc("restart_firewall_wan");
+		notify_rc(RCN_RELOAD_FIREWALL);
 	}
 
 	/* Start kabinet authenticator (for IPoE) */
