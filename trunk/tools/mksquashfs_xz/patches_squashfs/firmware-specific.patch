@@ -1,0 +1,68 @@
+--- a/Makefile
++++ b/Makefile
+@@ -62,7 +62,7 @@
+ # your distribution package manager.
+ #
+ # To skip building LZO support comment out the line below.
+-LZO_SUPPORT = 1
++#LZO_SUPPORT = 1
+ 
+ 
+ ########### Building LZ4 support #############
+@@ -76,7 +76,7 @@
+ # your distribution package manager.
+ #
+ # To skip building LZ4 support comment out the line below.
+-LZ4_SUPPORT = 1
++#LZ4_SUPPORT = 1
+ 
+ 
+ ########### Building ZSTD support ############
+@@ -90,7 +90,7 @@
+ # your distribution package manager.
+ #
+ # To skip building ZSTD support comment out the line below.
+-ZSTD_SUPPORT = 1
++#ZSTD_SUPPORT = 1
+ 
+ 
+ ######## Specifying default compression ########
+@@ -99,7 +99,7 @@
+ # in Mksquashfs.  Obviously the compression algorithm must have been
+ # selected to be built
+ #
+-COMP_DEFAULT = gzip
++COMP_DEFAULT = xz
+ 
+ 
+ ###############################################
+@@ -121,7 +121,7 @@
+ # this definition is the one you should comment out.  Commenting
+ # this out will not build code to read XATTRs from the source filesystem
+ # or write XATTRs to the target filesystem.
+-XATTR_OS_SUPPORT = 1
++#XATTR_OS_SUPPORT = 1
+ 
+ # Select whether you wish xattrs to be stored by Mksquashfs and extracted
+ # by Unsquashfs by default.  If selected users can disable xattr support by
+@@ -307,6 +307,11 @@
+ 
+ ifeq ($(XZ_SUPPORT),1)
+ CFLAGS += -DXZ_SUPPORT
++ifdef XZUTILSDIR
++INCLUDEDIR += -I$(XZUTILSDIR)/src/liblzma/api
++XZ_LIBDIR = -L$(XZUTILSDIR)/src/liblzma/.libs
++LIBS += $(XZUTILSDIR)/src/liblzma/.libs/liblzma.a
++endif
+ ifeq ($(XZ_EXTENDED_OPTIONS),1)
+ MKSQUASHFS_OBJS += xz_wrapper_extended.o
+ UNSQUASHFS_OBJS += xz_wrapper_extended.o
+@@ -314,7 +319,7 @@
+ MKSQUASHFS_OBJS += xz_wrapper.o
+ UNSQUASHFS_OBJS += xz_wrapper.o
+ endif
+-LIBS += -llzma
++#LIBS += -llzma
+ ifeq ($(COMP_DEFAULT),xz)
+ COMPRESSORS += xz@(default)
+ else

@@ -1367,6 +1367,10 @@ handle_notifications(void)
 				update_hosts_ap();
 			restart_dhcpd();
 		}
+		else if (strcmp(entry->d_name, RCN_RESTART_DNS) == 0)
+		{
+			restart_dns();
+		}
 		else if (strcmp(entry->d_name, RCN_RESTART_UPNP) == 0)
 		{
 			restart_upnp();
@@ -1766,6 +1770,11 @@ main(int argc, char **argv)
 #if defined(APP_ARIA)
 	else if (!strcmp(base, "stop_aria")) {
 		stop_aria();
+	}
+#endif
+#if defined(APP_ZAPRET)
+	else if (!strcmp(base, "restart_zapret")) {
+		restart_zapret();
 	}
 #endif
 	else if (!strcmp(base, "start_ddns")) {

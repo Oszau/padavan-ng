@@ -1,5 +1,5 @@
---- miniupnpd-2.3.9.orig/asyncsendto.c
-+++ miniupnpd-2.3.9/asyncsendto.c
+--- a/asyncsendto.c
++++ b/asyncsendto.c
 @@ -254,7 +254,7 @@
  					/* uncatched error */
  					if(sockaddr_to_string(elt->dest_addr, addr_str, sizeof(addr_str)) <= 0)
@@ -9,8 +9,8 @@
  					       "try_sendto", elt->sockfd, (unsigned)elt->len,
  					       addr_str);
  					ret--;
---- miniupnpd-2.3.9.orig/getifaddr.c
-+++ miniupnpd-2.3.9/getifaddr.c
+--- a/getifaddr.c
++++ b/getifaddr.c
 @@ -74,7 +74,7 @@
  		} else {
  			r = GETIFADDR_IOCTL_ERROR;
@@ -56,8 +56,8 @@
  		return -1;
  	}
  	for(ife = ifap; ife; ife = ife->ifa_next)
---- miniupnpd-2.3.9.orig/minissdp.c
-+++ miniupnpd-2.3.9/minissdp.c
+--- a/minissdp.c
++++ b/minissdp.c
 @@ -211,10 +211,12 @@
  	{
  		syslog(LOG_WARNING, "setsockopt(udp, SO_REUSEADDR): %m");
@@ -134,8 +134,8 @@
  		return -1;
  	}
  	else if(n != l)
---- miniupnpd-2.3.9.orig/miniupnpd.c
-+++ miniupnpd-2.3.9/miniupnpd.c
+--- a/miniupnpd.c
++++ b/miniupnpd.c
 @@ -489,7 +489,7 @@
  		if(get_lan_for_peer((struct sockaddr *)&clientname) == NULL)
  		{
@@ -243,8 +243,8 @@
  		}
  	}
  	/* try to send pending packets */
---- miniupnpd-2.3.9.orig/natpmp.c
-+++ miniupnpd-2.3.9/natpmp.c
+--- a/natpmp.c
++++ b/natpmp.c
 @@ -106,7 +106,7 @@
  			resp[3] = 3;	/* Network Failure (e.g. NAT box itself
  			                 * has not obtained a DHCP lease) */
@@ -281,8 +281,8 @@
  	} else if(n<resplen) {
  		syslog(LOG_ERR, "sendto(natpmp): sent only %d bytes out of %d",
  		       n, resplen);
---- miniupnpd-2.3.9.orig/pcpserver.c
-+++ miniupnpd-2.3.9/pcpserver.c
+--- a/pcpserver.c
++++ b/pcpserver.c
 @@ -1602,7 +1602,7 @@
  	if (!GETFLAG(PCP_ALLOWTHIRDPARTYMASK)) {
  		lan_addr = get_lan_for_peer(senderaddr);
@@ -301,8 +301,8 @@
  		}
  	}
  
---- miniupnpd-2.3.9.orig/upnpevents.c
-+++ miniupnpd-2.3.9/upnpevents.c
+--- a/upnpevents.c
++++ b/upnpevents.c
 @@ -497,7 +497,7 @@
  	i = send(obj->s, obj->buffer + obj->sent, obj->tosend - obj->sent, 0);
  	if(i<0) {
@@ -339,8 +339,8 @@
  				       "upnpevents_processfds", obj, obj->sub->uuid, obj->sub->callback);
  				LIST_REMOVE(obj->sub, entries);
  				free(obj->sub);
---- miniupnpd-2.3.9.orig/upnphttp.c
-+++ miniupnpd-2.3.9/upnphttp.c
+--- a/upnphttp.c
++++ b/upnphttp.c
 @@ -885,7 +885,7 @@
  			return;
  		}
@@ -389,8 +389,8 @@
  			}
  			h->state = EToDelete;
  		}
---- miniupnpd-2.3.9.orig/upnpredirect.c
-+++ miniupnpd-2.3.9/upnpredirect.c
+--- a/upnpredirect.c
++++ b/upnpredirect.c
 @@ -168,7 +168,7 @@
  	if(!lease_file) return -1;
  	fd = fopen( lease_file, "r");
@@ -409,9 +409,9 @@
  			       tmp->eport, proto_itoa(tmp->proto));
  			_upnp_delete_redir(tmp->eport, tmp->proto);
  			*p = tmp->next;
---- miniupnpd-2.3.9.orig/upnpsoap.c
-+++ miniupnpd-2.3.9/upnpsoap.c
-@@ -366,15 +366,17 @@
+--- a/upnpsoap.c
++++ b/upnpsoap.c
+@@ -366,14 +366,14 @@
  		struct in_addr addr;
  		if(getifaddr(ext_if_name, ext_ip_addr, INET_ADDRSTRLEN, &addr, NULL) < 0)
  		{
@@ -420,18 +420,16 @@
  				ext_if_name);
  			ext_ip_addr[0] = '\0';
  		} else if (addr_is_reserved(&addr)) {
- 			if (!GETFLAG(ALLOWPRIVATEIPV4MASK)) {
+ 			if (GETFLAG(ALLOWPRIVATEIPV4MASK)) {
 -				syslog(LOG_WARNING, "IGNORED : private/reserved address %s is not suitable for external IP", ext_ip_addr);
 +				syslog(LOG_DEBUG, "IGNORED : private/reserved address %s is not suitable for external IP", ext_ip_addr);
-+#if 0
  			} else {
- 				syslog(LOG_NOTICE, "private/reserved address %s is not suitable for external IP", ext_ip_addr);
+-				syslog(LOG_NOTICE, "private/reserved address %s is not suitable for external IP", ext_ip_addr);
++				syslog(LOG_DEBUG, "private/reserved address %s is not suitable for external IP", ext_ip_addr);
  				ext_ip_addr[0] = '\0';
-+#endif
  			}
  		}
- 	}
-@@ -491,7 +493,7 @@
+@@ -491,7 +491,7 @@
  		}
  		else
  		{
@@ -440,7 +438,7 @@
  			ClearNameValueList(&data);
  			SoapError(h, 402, "Invalid Args");
  			return;
-@@ -690,7 +692,7 @@
+@@ -690,7 +690,7 @@
  		}
  		else
  		{
@@ -449,7 +447,7 @@
  			ClearNameValueList(&data);
  			SoapError(h, 402, "Invalid Args");
  			return;
-@@ -1498,7 +1500,7 @@
+@@ -1498,7 +1498,7 @@
  	}
  	else
  	{
@@ -458,7 +456,7 @@
  		SoapError(h, 404, "Invalid Var");
  	}
  
-@@ -1664,7 +1666,7 @@
+@@ -1664,7 +1664,7 @@
  		}
  		else
  		{
@@ -467,7 +465,7 @@
  			       "PinholeVerification", int_ip, gai_strerror(r));
  			SoapError(h, 402, "Invalid Args");
  			return -1;
-@@ -2415,9 +2417,9 @@
+@@ -2415,9 +2415,9 @@
  				return;
  			}
  		}
@@ -479,7 +477,7 @@
  	}
  
  	SoapError(h, 401, "Invalid Action");
-@@ -2465,7 +2467,7 @@
+@@ -2465,7 +2465,7 @@
  	char body[2048];
  	int bodylen;
  

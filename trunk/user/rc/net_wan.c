@@ -1334,7 +1334,9 @@ wan_up(char *wan_ifname, int unit, int is_static)
 #endif
 
 	/* update resolv.conf content */
-	update_resolvconf(0, 0);
+	update_resolvconf(0, 1);
+
+	notify_rc(RCN_RESTART_DHCPD);
 
 	if (!is_static) {
 		/* re-start firewall */
@@ -1764,7 +1766,7 @@ update_resolvconf(int is_first_run, int do_not_notify)
 
 	/* notify dnsmasq */
 	if (resolv_changed && !do_not_notify)
-		restart_dns();
+		notify_rc(RCN_RESTART_DNS);
 
 	return 0;
 }
