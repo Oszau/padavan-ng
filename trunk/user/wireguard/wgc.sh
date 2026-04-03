@@ -27,7 +27,7 @@ PEER_PORT="$(nvram get vpnc_wg_peer_port)"
 PEER_ENDPOINT="$(nvram get vpnc_wg_peer_endpoint)"
 PEER_KEEPALIVE="$(nvram get vpnc_wg_peer_keepalive)"
 [ -n "$PEER_KEEPALIVE" ] || PEER_KEEPALIVE=25
-PEER_ALLOWEDIPS="$(nvram get vpnc_wg_peer_allowedips | tr -d ' ')"
+PEER_ALLOWEDIPS="$(nvram get vpnc_wg_peer_allowedips | tr -s ',' '\n')"
 POST_SCRIPT="/etc/storage/vpnc_post_script.sh"
 
 REMOTE_NETWORK_LIST="/etc/storage/vpnc_remote_network.list"
@@ -111,11 +111,9 @@ setconf_wg()
 {
     is_started || return 1
 
-    if ! ip addr show $IF_NAME | grep -q "inet6"; then
-        PEER_ALLOWEDIPS=$(echo "$PEER_ALLOWEDIPS" | tr -s ',' '\n' | grep -v ':' | tr -s '\n' ',' | sed 's/,$//')
-    fi
+    local allowed_ipv6
+    ip addr show $IF_NAME | grep -q "inet6" && allowed_ipv6=", ::/0"
 
-    local awg gai
     if [ "$MODULE" = "amneziawg" ]; then
         cps()
         {
@@ -143,7 +141,7 @@ $awg
 PublicKey = $PEER_PUBLIC
 Endpoint = ${PEER_ENDPOINT}:${PEER_PORT}
 PersistentKeepalive = $PEER_KEEPALIVE
-AllowedIPs = $PEER_ALLOWEDIPS
+AllowedIPs = 0.0.0.0/0$allowed_ipv6
 EOF
     [ "$IF_PRESHARED" ] && echo "PresharedKey = $IF_PRESHARED" >> "/tmp/${IF_NAME}.conf.$$"
 
@@ -154,8 +152,7 @@ EOF
     [ "$1" = "reconnect" ] && return
 
     if ! echo $res | grep -q "error"; then
-        log "configuration $IF_NAME applied successfully"
-        $WG show $IF_NAME | grep -A 5 "peer:" | grep -v "transfer" | while read i; do
+        $WG show $IF_NAME | grep -A 5 "peer:" | grep -E "peer|endpoint" | while read i; do
             log "$i"
         done
         send_ping
@@ -499,6 +496,13 @@ ipset_create()
 
     for name in $(bogon_networks); do
         ipset -q add $VPN_EXCLUDE_IPSET $name
+    done
+
+    echo "$PEER_ALLOWEDIPS" | grep -qv "/0" \
+    && log "adding additional AllowedIPs to ipset '$VPN_REMOTE_IPSET'"
+
+    for name in $PEER_ALLOWEDIPS; do
+        ipset -q add $VPN_REMOTE_IPSET "$name"
     done
 }
 

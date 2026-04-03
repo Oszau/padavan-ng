@@ -106,9 +106,11 @@ configure:
 	)
 
 clean:
-	if [ -f $(SRC_NAME)/Makefile ] ; then \
-		$(MAKE) -C $(SRC_NAME) distclean ; \
-	fi ; \
+	( for i in `ls -d */`; do \
+		if [ -f $$i/Makefile ]; then \
+			$(MAKE) -C $$i distclean; \
+		fi \
+	done )
 	rm -f config_done
 
 install:
