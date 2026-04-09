@@ -1,0 +1,35 @@
+--- a/src/udprelay.c
++++ b/src/udprelay.c
+@@ -371,6 +371,9 @@
+     int remote_sock;
+ 
+     if (ipv6) {
++#ifndef CONFIG_IPV6
++        return -1;
++#else
+         // Try to bind IPv6 first
+         struct sockaddr_in6 addr;
+         memset(&addr, 0, sizeof(struct sockaddr_in6));
+@@ -400,6 +403,7 @@
+ #ifdef MODULE_REMOTE
+     }
+ #endif
++#endif
+     } else {
+         // Or else bind to IPv4
+         struct sockaddr_in addr;
+--- a/src/winsock.c
++++ b/src/winsock.c
+@@ -227,10 +227,12 @@
+         struct sockaddr_in *sin = (struct sockaddr_in *)&ss;
+         sin->sin_family      = AF_INET;
+         sin->sin_addr.s_addr = INADDR_ANY;
++#ifdef CONFIG_IPV6
+     } else if (sa->sa_family == AF_INET6) {
+         struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *)&ss;
+         sin6->sin6_family = AF_INET6;
+         sin6->sin6_addr   = in6addr_any;
++#endif
+     } else {
+         return -1;
+     }

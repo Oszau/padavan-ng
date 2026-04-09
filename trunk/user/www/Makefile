@@ -153,10 +153,14 @@ endif
 ifneq ($(CONFIG_FIRMWARE_INCLUDE_STUBBY),y)
 	rm -f $(INSTALLDIR)/www/Advanced_Services_DoT.asp
 endif
-ifeq (,$(filter y,$(CONFIG_FIRMWARE_INCLUDE_TOR) $(CONFIG_FIRMWARE_INCLUDE_PRIVOXY)))
+ifeq (,$(filter y,$(CONFIG_FIRMWARE_INCLUDE_TOR) \
+		$(CONFIG_FIRMWARE_INCLUDE_SSREDIR) \
+		$(CONFIG_FIRMWARE_INCLUDE_SSLOCAL) \
+		$(CONFIG_FIRMWARE_INCLUDE_PRIVOXY)))
 	rm -f $(INSTALLDIR)/www/Advanced_Services_Proxy.asp
 endif
-ifeq (,$(filter y,$(CONFIG_FIRMWARE_INCLUDE_NFQWS) $(CONFIG_FIRMWARE_INCLUDE_NFQWS2)))
+ifeq (,$(filter y,$(CONFIG_FIRMWARE_INCLUDE_NFQWS) \
+		$(CONFIG_FIRMWARE_INCLUDE_NFQWS2)))
 	rm -f $(INSTALLDIR)/www/Advanced_Services_Zapret.asp
 endif
 

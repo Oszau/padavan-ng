@@ -1,0 +1,39 @@
+From ff44361f5d4d45810b9d51a6166751540d6417d2 Mon Sep 17 00:00:00 2001
+From: Max Lv <max.c.lv@gmail.com>
+Date: Mon, 9 Feb 2026 09:04:58 +0800
+Subject: [PATCH] Fix unbounded buffer growth in aead_decrypt chunk reassembly
+
+The idx-tracking optimization in aead_decrypt skipped memmove when
+partial AEAD chunks spanned multiple calls, but never compacted the
+dead space before idx. This caused the chunk buffer to grow
+proportionally to total data transferred (~10 MB growth per 10 MB
+transferred), tripping the stress test memory leak threshold.
+
+Compact residual data to the front when appending new ciphertext,
+keeping the buffer bounded to the size of the residual plus new data.
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+---
+ src/aead.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/src/aead.c b/src/aead.c
+index 77eb16e84..44a49db68 100644
+--- a/src/aead.c
++++ b/src/aead.c
+@@ -650,9 +650,12 @@ aead_decrypt(buffer_t *ciphertext, cipher_ctx_t *cipher_ctx, size_t capacity)
+         chunk->idx = 0;
+         ciphertext->len = 0;
+     } else {
+-        brealloc(chunk,
+-                 chunk->idx + chunk->len + ciphertext->len, capacity);
+-        memcpy(chunk->data + chunk->idx + chunk->len,
++        if (chunk->idx > 0) {
++            memmove(chunk->data, chunk->data + chunk->idx, chunk->len);
++            chunk->idx = 0;
++        }
++        brealloc(chunk, chunk->len + ciphertext->len, capacity);
++        memcpy(chunk->data + chunk->len,
+                ciphertext->data, ciphertext->len);
+         chunk->len += ciphertext->len;
+     }
