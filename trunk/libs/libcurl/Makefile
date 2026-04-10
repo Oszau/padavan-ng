@@ -9,10 +9,8 @@ SRC_URL = https://github.com/curl/curl/releases/download/curl-8_17_0/$(SRC_NAME)
 endif
 
 QUIC = --without-nghttp3 --without-ngtcp2 --without-openssl-quic
-ifeq ($(CONFIG_FIRMWARE_INCLUDE_QUIC),y)
-QUIC = --with-nghttp3 --without-ngtcp2 --with-openssl-quic
-endif
-ifeq ($(CONFIG_FIRMWARE_INCLUDE_QUIC_NGTCP2),y)
+ifneq (,$(filter y, $(CONFIG_FIRMWARE_INCLUDE_QUIC) \
+                    $(CONFIG_FIRMWARE_INCLUDE_QUIC_NGTCP2)))
 QUIC = --with-nghttp3 --with-ngtcp2 --without-openssl-quic
 endif
 
