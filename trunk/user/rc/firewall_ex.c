@@ -678,10 +678,10 @@ include_masquerade(FILE *fp, char *wan_if, char *wan_ip, char *lan_net)
 	char *dtype = "POSTROUTING";
 
 	if (wan_ip) {
-		if (nvram_match("nf_nat_snat", "1"))
-			fprintf(fp, "-A %s -o %s -s %s -j SNAT --to-source %s\n", dtype, wan_if, lan_net, wan_ip);
-		else
+		if (nvram_match("nf_nat_snat", "0"))
 			fprintf(fp, "-A %s -o %s ! -s %s -j MASQUERADE\n", dtype, wan_if, wan_ip);
+		else
+			fprintf(fp, "-A %s -o %s -s %s -j SNAT --to-source %s\n", dtype, wan_if, lan_net, wan_ip);
 	}
 	else
 		fprintf(fp, "-A %s -o %s -s %s -j MASQUERADE\n", dtype, wan_if, lan_net);
