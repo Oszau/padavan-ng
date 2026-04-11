@@ -1,8 +1,8 @@
 # https://libsodium.gitbook.io/doc
 
-SRC_VER  = 1.0.21
+SRC_VER  = 1.0.22
 SRC_NAME = libsodium-$(SRC_VER)
-SRC_URL  = https://github.com/jedisct1/libsodium/releases/download/$(SRC_VER)-RELEASE/$(SRC_NAME).tar.gz
+SRC_URL  = https://github.com/jedisct1/libsodium/archive/refs/tags/$(SRC_VER).tar.gz
 
 all: download_test extract_test config_test
 	$(MAKE) -j$(HOST_NCPU) -C $(SRC_NAME)

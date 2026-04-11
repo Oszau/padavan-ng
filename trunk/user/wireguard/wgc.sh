@@ -513,7 +513,7 @@ bogon_networks()
         192.0.0.0/24 192.0.2.0/24 198.51.100.0/24
         203.0.113.0/24 224.0.0.0/4 240.0.0.0/4
         $(nvram get vpns_vnet)/24
-        $(nvram get lan_ipaddr)/$(nvram get lan_netmask)"
+        $(nvram get lan_ipaddr)/24"
 }
 
 ipt_set_rules()
@@ -569,7 +569,7 @@ stop_fw()
     ipt_remove_rule(){ while iptables -t $1 -C $2 2>/dev/null; do iptables -t $1 -D $2; done }
     ipt_remove_chain(){ iptables -t $1 -F $2 2>/dev/null && iptables -t $1 -X $2 2>/dev/null; }
 
-    ipt_remove_rule "mangle" "PREROUTING -s $(nvram get lan_ipaddr)/$(nvram get lan_netmask) -j vpnc_wireguard"
+    ipt_remove_rule "mangle" "PREROUTING -s $(nvram get lan_ipaddr)/24 -j vpnc_wireguard"
     ipt_remove_rule "mangle" "PREROUTING -s $(nvram get vpns_vnet)/24 -j vpnc_wireguard"
 
     ipt_remove_chain "mangle" "vpnc_wireguard"
@@ -587,7 +587,7 @@ start_fw()
 :vpnc_wireguard - [0:0]
 :vpnc_wireguard_remote - [0:0]
 :vpnc_wireguard_mark - [0:0]
--A PREROUTING -s $(nvram get lan_ipaddr)/$(nvram get lan_netmask) -j vpnc_wireguard
+-A PREROUTING -s $(nvram get lan_ipaddr)/24 -j vpnc_wireguard
 -A PREROUTING -s $(nvram get vpns_vnet)/24 -j vpnc_wireguard
 -A vpnc_wireguard -p udp --dport 53 -j RETURN
 -A vpnc_wireguard -p tcp --dport 53 -j RETURN
