@@ -1,0 +1,283 @@
+From 31731baa4468e9bec4ec014ba115c60193d9ae90 Mon Sep 17 00:00:00 2001
+From: Max Lv <max.c.lv@gmail.com>
+Date: Mon, 9 Feb 2026 08:53:28 +0800
+Subject: [PATCH] Reduce memory copies in crypto encrypt/decrypt paths
+
+Add bswap_data() to swap buffer pointers instead of copying, replace
+brealloc+memcpy with pointer swaps in aead and stream codecs, add
+in-place fast paths for non-Salsa20 stream ciphers, and use index
+tracking instead of memmove in aead_decrypt chunked reassembly.
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+---
+ src/aead.c   | 72 +++++++++++++++++++++++++++-------------------------
+ src/crypto.h | 12 +++++++++
+ src/stream.c | 48 +++++++++++++++++++++++++++++------
+ 3 files changed, 89 insertions(+), 43 deletions(-)
+
+diff --git a/src/aead.c b/src/aead.c
+index 73349da64..77eb16e84 100644
+--- a/src/aead.c
++++ b/src/aead.c
+@@ -439,8 +439,7 @@ aead_encrypt_all(buffer_t *plaintext, cipher_t *cipher, size_t capacity)
+ 
+     assert(ciphertext->len == clen);
+ 
+-    brealloc(plaintext, salt_len + ciphertext->len, capacity);
+-    memcpy(plaintext->data, ciphertext->data, salt_len + ciphertext->len);
++    bswap_data(plaintext, ciphertext);
+     plaintext->len = salt_len + ciphertext->len;
+ 
+     return CRYPTO_OK;
+@@ -490,8 +489,7 @@ aead_decrypt_all(buffer_t *ciphertext, cipher_t *cipher, size_t capacity)
+ 
+     ppbloom_add((void *)salt, salt_len);
+ 
+-    brealloc(ciphertext, plaintext->len, capacity);
+-    memcpy(ciphertext->data, plaintext->data, plaintext->len);
++    bswap_data(ciphertext, plaintext);
+     ciphertext->len = plaintext->len;
+ 
+     return CRYPTO_OK;
+@@ -579,8 +577,7 @@ aead_encrypt(buffer_t *plaintext, cipher_ctx_t *cipher_ctx, size_t capacity)
+     if (err)
+         return err;
+ 
+-    brealloc(plaintext, ciphertext->len, capacity);
+-    memcpy(plaintext->data, ciphertext->data, ciphertext->len);
++    bswap_data(plaintext, ciphertext);
+     plaintext->len = ciphertext->len;
+ 
+     return 0;
+@@ -634,9 +631,7 @@ aead_chunk_decrypt(cipher_ctx_t *ctx, uint8_t *p, uint8_t *c, uint8_t *n,
+ int
+ aead_decrypt(buffer_t *ciphertext, cipher_ctx_t *cipher_ctx, size_t capacity)
+ {
+-    int err             = CRYPTO_OK;
+-    static buffer_t tmp = { 0, 0, 0, NULL };
+-
++    int err          = CRYPTO_OK;
+     cipher_t *cipher = cipher_ctx->cipher;
+ 
+     size_t salt_len = cipher->key_len;
+@@ -647,20 +642,29 @@ aead_decrypt(buffer_t *ciphertext, cipher_ctx_t *cipher_ctx, size_t capacity)
+         balloc(cipher_ctx->chunk, capacity);
+     }
+ 
+-    brealloc(cipher_ctx->chunk,
+-             cipher_ctx->chunk->len + ciphertext->len, capacity);
+-    memcpy(cipher_ctx->chunk->data + cipher_ctx->chunk->len,
+-           ciphertext->data, ciphertext->len);
+-    cipher_ctx->chunk->len += ciphertext->len;
++    buffer_t *chunk = cipher_ctx->chunk;
+ 
+-    brealloc(&tmp, cipher_ctx->chunk->len, capacity);
+-    buffer_t *plaintext = &tmp;
++    if (chunk->len == 0) {
++        bswap_data(chunk, ciphertext);
++        chunk->len = ciphertext->len;
++        chunk->idx = 0;
++        ciphertext->len = 0;
++    } else {
++        brealloc(chunk,
++                 chunk->idx + chunk->len + ciphertext->len, capacity);
++        memcpy(chunk->data + chunk->idx + chunk->len,
++               ciphertext->data, ciphertext->len);
++        chunk->len += ciphertext->len;
++    }
++
++    // Write plaintext directly into the (now-free) ciphertext buffer.
++    brealloc(ciphertext, chunk->len, capacity);
+ 
+     if (!cipher_ctx->init) {
+-        if (cipher_ctx->chunk->len <= salt_len)
++        if (chunk->len <= salt_len)
+             return CRYPTO_NEED_MORE;
+ 
+-        memcpy(cipher_ctx->salt, cipher_ctx->chunk->data, salt_len);
++        memcpy(cipher_ctx->salt, chunk->data + chunk->idx, salt_len);
+ 
+         if (ppbloom_check((void *)cipher_ctx->salt, salt_len) == 1) {
+             LOGE("crypto: AEAD: repeat salt detected");
+@@ -669,38 +673,40 @@ aead_decrypt(buffer_t *ciphertext, cipher_ctx_t *cipher_ctx, size_t capacity)
+ 
+         aead_cipher_ctx_set_key(cipher_ctx, 0);
+ 
+-        memmove(cipher_ctx->chunk->data, cipher_ctx->chunk->data + salt_len,
+-                cipher_ctx->chunk->len - salt_len);
+-        cipher_ctx->chunk->len -= salt_len;
++        chunk->idx += salt_len;
++        chunk->len -= salt_len;
+ 
+         cipher_ctx->init = 1;
+     }
+ 
+     size_t plen = 0;
+     size_t cidx = 0;
+-    while (cipher_ctx->chunk->len > 0) {
+-        size_t chunk_clen = cipher_ctx->chunk->len;
++    while (chunk->len > 0) {
++        size_t chunk_clen = chunk->len;
+         size_t chunk_plen = 0;
+         err = aead_chunk_decrypt(cipher_ctx,
+-                                 (uint8_t *)plaintext->data + plen,
+-                                 (uint8_t *)cipher_ctx->chunk->data + cidx,
++                                 (uint8_t *)ciphertext->data + plen,
++                                 (uint8_t *)chunk->data + chunk->idx + cidx,
+                                  cipher_ctx->nonce, &chunk_plen, &chunk_clen);
+         if (err == CRYPTO_ERROR) {
+             return err;
+         } else if (err == CRYPTO_NEED_MORE) {
+             if (plen == 0)
+                 return err;
+-            else{
+-                memmove((uint8_t *)cipher_ctx->chunk->data, 
+-			(uint8_t *)cipher_ctx->chunk->data + cidx, chunk_clen);
++            else {
++                chunk->idx += cidx;
+                 break;
+             }
+         }
+-        cipher_ctx->chunk->len = chunk_clen;
++        chunk->len = chunk_clen;
+         cidx += cipher_ctx->cipher->tag_len * 2 + CHUNK_SIZE_LEN + chunk_plen;
+-        plen                  += chunk_plen;
++        plen += chunk_plen;
+     }
+-    plaintext->len = plen;
++
++    if (chunk->len == 0)
++        chunk->idx = 0;
++
++    ciphertext->len = plen;
+ 
+     // Add the salt to bloom filter
+     if (cipher_ctx->init == 1) {
+@@ -712,10 +718,6 @@ aead_decrypt(buffer_t *ciphertext, cipher_ctx_t *cipher_ctx, size_t capacity)
+         cipher_ctx->init = 2;
+     }
+ 
+-    brealloc(ciphertext, plaintext->len, capacity);
+-    memcpy(ciphertext->data, plaintext->data, plaintext->len);
+-    ciphertext->len = plaintext->len;
+-
+     return CRYPTO_OK;
+ }
+ 
+diff --git a/src/crypto.h b/src/crypto.h
+index 70707932b..eb2d184e2 100644
+--- a/src/crypto.h
++++ b/src/crypto.h
+@@ -131,6 +131,18 @@ int balloc(buffer_t *, size_t);
+ int brealloc(buffer_t *, size_t, size_t);
+ int bprepend(buffer_t *, buffer_t *, size_t);
+ void bfree(buffer_t *);
++
++static inline void
++bswap_data(buffer_t *a, buffer_t *b)
++{
++    char *tmp_data      = a->data;
++    size_t tmp_capacity = a->capacity;
++    a->data             = b->data;
++    a->capacity         = b->capacity;
++    b->data             = tmp_data;
++    b->capacity         = tmp_capacity;
++}
++
+ int rand_bytes(void *, int);
+ 
+ crypto_t *crypto_init(const char *, const char *, const char *);
+diff --git a/src/stream.c b/src/stream.c
+index b2e2cea82..849c51182 100644
+--- a/src/stream.c
++++ b/src/stream.c
+@@ -344,8 +344,7 @@ stream_encrypt_all(buffer_t *plaintext, cipher_t *cipher, size_t capacity)
+     dump("NONCE", ciphertext->data, nonce_len);
+ #endif
+ 
+-    brealloc(plaintext, nonce_len + ciphertext->len, capacity);
+-    memcpy(plaintext->data, ciphertext->data, nonce_len + ciphertext->len);
++    bswap_data(plaintext, ciphertext);
+     plaintext->len = nonce_len + ciphertext->len;
+ 
+     return CRYPTO_OK;
+@@ -359,6 +358,19 @@ stream_encrypt(buffer_t *plaintext, cipher_ctx_t *cipher_ctx, size_t capacity)
+ 
+     cipher_t *cipher = cipher_ctx->cipher;
+ 
++    // In-place fast path for non-Salsa20 ciphers after init.
++    // mbedtls_cipher_update supports output == input for CFB/CTR stream modes.
++    if (cipher_ctx->init && cipher->method < SALSA20) {
++        size_t out_len = plaintext->len;
++        int err = cipher_ctx_update(cipher_ctx,
++                                    (uint8_t *)plaintext->data, &out_len,
++                                    (const uint8_t *)plaintext->data, plaintext->len);
++        if (err)
++            return CRYPTO_ERROR;
++        plaintext->len = out_len;
++        return CRYPTO_OK;
++    }
++
+     static buffer_t tmp = { 0, 0, 0, NULL };
+ 
+     int err          = CRYPTO_OK;
+@@ -416,8 +428,7 @@ stream_encrypt(buffer_t *plaintext, cipher_ctx_t *cipher_ctx, size_t capacity)
+     dump("CIPHER", ciphertext->data + nonce_len, ciphertext->len);
+ #endif
+ 
+-    brealloc(plaintext, nonce_len + ciphertext->len, capacity);
+-    memcpy(plaintext->data, ciphertext->data, nonce_len + ciphertext->len);
++    bswap_data(plaintext, ciphertext);
+     plaintext->len = nonce_len + ciphertext->len;
+ 
+     return CRYPTO_OK;
+@@ -475,8 +486,7 @@ stream_decrypt_all(buffer_t *ciphertext, cipher_t *cipher, size_t capacity)
+ 
+     ppbloom_add((void *)nonce, nonce_len);
+ 
+-    brealloc(ciphertext, plaintext->len, capacity);
+-    memcpy(ciphertext->data, plaintext->data, plaintext->len);
++    bswap_data(ciphertext, plaintext);
+     ciphertext->len = plaintext->len;
+ 
+     return CRYPTO_OK;
+@@ -490,6 +500,29 @@ stream_decrypt(buffer_t *ciphertext, cipher_ctx_t *cipher_ctx, size_t capacity)
+ 
+     cipher_t *cipher = cipher_ctx->cipher;
+ 
++    // In-place fast path for non-Salsa20 ciphers after init.
++    // mbedtls_cipher_update supports output == input for CFB/CTR stream modes.
++    if (cipher_ctx->init && cipher->method < SALSA20) {
++        if (ciphertext->len <= 0)
++            return CRYPTO_NEED_MORE;
++        size_t out_len = ciphertext->len;
++        int err = cipher_ctx_update(cipher_ctx,
++                                    (uint8_t *)ciphertext->data, &out_len,
++                                    (const uint8_t *)ciphertext->data, ciphertext->len);
++        if (err)
++            return CRYPTO_ERROR;
++        ciphertext->len = out_len;
++        if (cipher_ctx->init == 1 && cipher->method >= RC4_MD5) {
++            if (ppbloom_check((void *)cipher_ctx->nonce, cipher->nonce_len) == 1) {
++                LOGE("crypto: stream: repeat IV detected");
++                return CRYPTO_ERROR;
++            }
++            ppbloom_add((void *)cipher_ctx->nonce, cipher->nonce_len);
++            cipher_ctx->init = 2;
++        }
++        return CRYPTO_OK;
++    }
++
+     static buffer_t tmp = { 0, 0, 0, NULL };
+ 
+     int err = CRYPTO_OK;
+@@ -585,8 +618,7 @@ stream_decrypt(buffer_t *ciphertext, cipher_ctx_t *cipher_ctx, size_t capacity)
+         }
+     }
+ 
+-    brealloc(ciphertext, plaintext->len, capacity);
+-    memcpy(ciphertext->data, plaintext->data, plaintext->len);
++    bswap_data(ciphertext, plaintext);
+     ciphertext->len = plaintext->len;
+ 
+     return CRYPTO_OK;

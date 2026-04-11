@@ -21,7 +21,7 @@
 
 function initial(){
 	show_banner(1);
-	show_menu(5,8,3);
+	show_menu(5,9,3);
 	show_footer();
 	load_body();
 

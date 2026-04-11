@@ -3,7 +3,6 @@
  * Copyright (C) 2015-2019 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
  */
 
-#include "compat/compat.h"
 #include "junk.h"
 #include "magic_header.h"
 #include "queueing.h"
@@ -14,7 +13,9 @@
 #include "messages.h"
 #include "cookie.h"
 
+#ifdef COMPAT_CRYPTO_IS_ZINC
 #include <linux/simd.h>
+#endif
 #include <linux/uio.h>
 #include <linux/inetdevice.h>
 #include <linux/socket.h>

@@ -1,4 +1,4 @@
-SRC_VER = 0.9.1
+SRC_VER = 0.9.3
 SRC_NAME = libcap-ng-$(SRC_VER)
 SRC_URL = https://github.com/stevegrubb/libcap-ng/archive/refs/tags/v$(SRC_VER).tar.gz
 

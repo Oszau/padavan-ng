@@ -1,0 +1,52 @@
+--- strongswan-5.9.14.orig/src/libcharon/plugins/socket_default/socket_default_socket.c
++++ strongswan-5.9.14/src/libcharon/plugins/socket_default/socket_default_socket.c
+@@ -681,6 +681,7 @@
+ 			pktinfo = IP_RECVDSTADDR;
+ #endif
+ 			break;
++#ifdef CONFIG_IPV6
+ 		case AF_INET6:
+ 			memcpy(&addr.sin6.sin6_addr, &in6addr_any, sizeof(in6addr_any));
+ 			addr.sin6.sin6_port = htons(*port);
+@@ -688,6 +689,7 @@
+ 			sol = SOL_IPV6;
+ 			pktinfo = IPV6_RECVPKTINFO;
+ 			break;
++#endif
+ 		default:
+ 			return -1;
+ 	}
+--- strongswan-5.9.14.orig/src/libcharon/plugins/tnc_pdp/tnc_pdp.c
++++ strongswan-5.9.14/src/libcharon/plugins/tnc_pdp/tnc_pdp.c
+@@ -181,6 +181,7 @@
+ 			addrlen = sizeof(struct sockaddr_in);
+ 			break;
+ 		}
++#ifdef CONFIG_IPV6
+ 		case AF_INET6:
+ 		{
+ 			struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *)&addr;
+@@ -190,6 +191,7 @@
+ 			addrlen = sizeof(struct sockaddr_in6);
+ 			break;
+ 		}
++#endif
+ 		default:
+ 			return 0;
+ 	}
+@@ -256,6 +258,7 @@
+ 			addrlen = sizeof(struct sockaddr_in);
+ 			break;
+ 		}
++#ifdef CONFIG_IPV6
+ 		case AF_INET6:
+ 		{
+ 			struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *)&addr;
+@@ -265,6 +268,7 @@
+ 			addrlen = sizeof(struct sockaddr_in6);
+ 			break;
+ 		}
++#endif
+ 		default:
+ 			return 0;
+ 	}

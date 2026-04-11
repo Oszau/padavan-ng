@@ -2,7 +2,16 @@
 
 DOH_BIN="/usr/sbin/https_dns_proxy"
 PID_FILE="/var/run/https_dns_proxy.pid"
-FIRST_PORT="65055"
+
+LISTEN_ADDR="127.0.0.1"
+LISTEN_PORT="$(nvram get doh_listen_port)"
+BOOTSTRAP_DNS="$(nvram get doh_bootstrap_dns)"
+
+# 0: standalone; 1: with dnsmasq
+DOH_MODE="$(nvram get doh_mode)"
+
+# 0: 127.0.0.1; 1: lan_ipaddr; 2: 0.0.0.0
+LISTEN_MODE="$(nvram get doh_listen_mode)"
 
 log()
 {
@@ -24,22 +33,29 @@ start_service()
         return
     fi
 
+    case "$LISTEN_MODE" in
+        1) LISTEN_ADDR="$(nvram get lan_ipaddr_t)" ;;
+        2) LISTEN_ADDR="0.0.0.0" ;;
+    esac
+
     start_doh()
     {
         [ "$2" ] || return
-        local bootstrap_dns=""
-        [ "$3" ] && bootstrap_dns="-b $3"
+        local bootstrap=""
+        [ "$BOOTSTRAP_DNS" ] && bootstrap="-b $BOOTSTRAP_DNS"
 
-        $DOH_BIN -p $1 -r $2 $bootstrap_dns -a 127.0.0.1 -u nobody -g nogroup -4 -d
-        if pgrep -f "$DOH_BIN -p $1 -r $2 " 2>&1 >/dev/null; then
+        local res=$($DOH_BIN -p $1 -r $2 $bootstrap -a "$LISTEN_ADDR" -u nobody -g nogroup -4 -d)
+        if pgrep -f "$DOH_BIN -p $1 " 2>&1 >/dev/null; then
             [ ! -f "$PID_FILE" ] && log "started, version $($DOH_BIN -V)"
-            log "resolver $2, listening on 127.0.0.1:$1"
+            log "resolver $2, listening on $LISTEN_ADDR:$1"
             touch "$PID_FILE"
+        else
+            log "resolver $2 failed to start: $res"
         fi
     }
 
-    for i in 1 2 3; do
-        start_doh $(($FIRST_PORT+$i-1)) "$(nvram get doh_server$i)" "$(nvram get doh_server_ip$i)"
+    for i in 0 1 2 3; do
+        start_doh $(($LISTEN_PORT + $i)) "$(nvram get doh_server$i)"
     done
 
     [ ! -f "$PID_FILE" ] && error "failed to start"

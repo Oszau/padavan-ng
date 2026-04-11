@@ -107,10 +107,16 @@ startup_args()
     echo "--user=$USER --qnum=$NFQUEUE_NUM"
     [ "$LOG_LEVEL" = "1" ] && echo "--debug=syslog"
 
-    [ -n "$NFQWS_VER" ] && \
-        echo "--lua-init=@/usr/share/zapret/lua/zapret-lib.lua
-              --lua-init=@/usr/share/zapret/lua/zapret-antidpi.lua
-              --lua-init=@/usr/share/zapret/lua/zapret-auto.lua"
+    if [ "$NFQWS_VER" = "2" ]; then
+        local i lua="$CONF_DIR_EXAMPLE/lua"
+
+        [ -x "${NFQWS_BIN_GIT}$NFQWS_VER" ] && [ -d "/tmp/zapret2/lua" ] \
+        && lua="/tmp/zapret2/lua"
+
+        for i in $(find "$lua" -maxdepth 1 -name "*.lua" -o -name "*.lua.gz"); do
+            echo "--lua-init=@$i"
+        done
+    fi
 
     local strategy="$(grep -v '^[[:space:]]*#' "$STRATEGY_FILE" | tr -d '"')"
     strategy=$(replace_str "$HOSTLIST_MARKER" "$HOSTLIST" "$strategy")
@@ -181,10 +187,12 @@ set_fw_rules()
     echo "
 -$1 PREROUTING -j zapret_clients
 -$1 OUTPUT -j zapret_out
--$1 INPUT -p tcp $(cb reply 3) -m multiport --sports 80,443 -j zapret_pre
--$1 FORWARD -p tcp $(cb reply 3) -m multiport --sports 80,443 -j zapret_pre
--$1 POSTROUTING -p tcp $(cb original 9) -j zapret_post
--$1 POSTROUTING -p udp $(cb original 9) -j zapret_post
+-$1 INPUT -p tcp $(cb reply 10) -m multiport --sports 80,443 -j zapret_pre
+-$1 INPUT -p udp $(cb reply 3) --sport 443 -j zapret_pre
+-$1 FORWARD -p tcp $(cb reply 10) -m multiport --sports 80,443 -j zapret_pre
+-$1 FORWARD -p udp $(cb reply 3) --sport 443 -j zapret_pre
+-$1 POSTROUTING -p tcp $(cb original 20) -j zapret_post
+-$1 POSTROUTING -p udp $(cb original 5) -j zapret_post
 "
 }
 
@@ -335,9 +343,10 @@ reload_service()
 
 download_nfqws()
 {
-    # $1 - nfqws version number starting from 69.3
+    # $1 - nfqws2
+    # $2 - nfqws version number starting from 69.3
 
-    local archive="/tmp/zapret.tar.gz"
+    local archive="/tmp/zapret$1.tar.gz"
 
     ARCH=$(uname -m | grep -oE 'mips|mipsel|aarch64|arm|rlx|i386|i686|x86_64')
     case "$ARCH" in
@@ -360,29 +369,29 @@ download_nfqws()
     esac
     [ -n "$ARCH" ] || error "cpu arch unknown"
 
-    if [ "$1" ]; then
-        URL="https://github.com/bol-van/zapret/releases/download/v$1/zapret-v$1-openwrt-embedded.tar.gz"
+    if [ "$2" ]; then
+        URL="https://github.com/bol-van/zapret$1/releases/download/v$2/zapret$1-v$2-openwrt-embedded.tar.gz"
         if [ -x /usr/bin/curl ]; then
-            curl -sSL --connect-timeout 10 "$URL" -o $archive \
+            curl -SL --connect-timeout 20 --progress-bar "$URL" -o $archive \
                 || error "unable to download $URL"
         else
-            wget -q -T 10 "$URL" -O $archive \
+            wget -T20 --no-check-certificate "$URL" -O $archive \
                 || error "unable to download $URL"
         fi
     else
         if [ -x /usr/bin/curl ]; then
-            URL=$(curl -sSL --connect-timeout 10 'https://api.github.com/repos/bol-van/zapret/releases/latest' \
+            URL=$(curl -sSL --connect-timeout 20 "https://api.github.com/repos/bol-van/zapret$1/releases/latest" \
                   | grep 'browser_download_url.*openwrt-embedded' | cut -d '"' -f4)
             [ -n "$URL" ] || error "unable to get archive link"
 
-            curl -sSL --connect-timeout 10 "$URL" -o $archive \
+            curl -SL --connect-timeout 20 --progress-bar "$URL" -o $archive \
                 || error "unable to download: $URL"
         else
-            URL=$(wget -q -T 10 'https://api.github.com/repos/bol-van/zapret/releases/latest' -O- \
+            URL=$(wget -q -T20 --no-check-certificate "https://api.github.com/repos/bol-van/zapret$1/releases/latest" -O- \
                   | tr ',' '\n' | grep 'browser_download_url.*openwrt-embedded' | cut -d '"' -f4)
             [ -n "$URL" ] || error "unable to get archive link"
 
-            wget -q -T 10 "$URL" -O $archive \
+            wget -T20 --no-check-certificate "$URL" -O $archive \
                 || error "unable to download: $URL"
         fi
     fi
@@ -391,12 +400,27 @@ download_nfqws()
     [ $(cat $archive | head -c3) = "Not" ] && error "not found: $URL"
     log "downloaded successfully: $URL"
 
-    local nfqws_bin=$(tar tzfv $archive | grep -E "binaries/(linux-)?$ARCH/nfqws" | awk '{print $6}')
-    [ -n "$nfqws_bin" ] || error "nfqws not found for architecture $ARCH"
+    local nfqws_bin=$(tar tzfv $archive | grep -E "binaries/(linux-)?$ARCH/nfqws$1" | awk '{print $6}')
+    [ -n "$nfqws_bin" ] || error "nfqws$1 not found for architecture $ARCH"
 
-    tar xzf $archive "$nfqws_bin" -O > $NFQWS_BIN_GIT
-    [ -s $NFQWS_BIN_GIT ] && chmod +x $NFQWS_BIN_GIT
+    local lua=$(tar tzfv $archive | grep "lua/zapret" | awk '{print $6}')
+    if [ -n "$lua" ]; then
+        rm -rf /tmp/zapret2/lua
+        mkdir -p /tmp/zapret2
+        tar xzf $archive \
+            $(tar tzfv $archive | grep "lua/zapret" | awk '{print $6}') \
+            --strip-components 1 --overwrite -C /tmp/zapret2
+    fi
+
+    tar xzf $archive "$nfqws_bin" --strip-components 3 -C /tmp
+    if [ -s $NFQWS_BIN_GIT$1 ]; then
+        chmod +x $NFQWS_BIN_GIT$1
+    else
+        log "error: nfqws$1 extract failed"
+    fi
+
     rm -f $archive
+    echo "done"
 }
 
 download_list()
@@ -404,9 +428,9 @@ download_list()
     local list="/tmp/filter.list"
 
     if [ -x /usr/bin/curl ]; then
-        curl -sSL --connect-timeout 5 "$HOSTLIST_DOMAINS" -o $list || error "unable to download $HOSTLIST_DOMAINS"
+        curl -SL --connect-timeout 20 --progress-bar "$HOSTLIST_DOMAINS" -o $list || error "unable to download $HOSTLIST_DOMAINS"
     else
-        wget -q -T 10 "$HOSTLIST_DOMAINS" -O $list || error "unable to download $HOSTLIST_DOMAINS"
+        wget -T20 --no-check-certificate "$HOSTLIST_DOMAINS" -O $list || error "unable to download $HOSTLIST_DOMAINS"
     fi
 
     [ -s "$list" ] && log "downloaded successfully: $HOSTLIST_DOMAINS"
@@ -447,13 +471,14 @@ set_strategy_file "$2"
 # nfqws2 support
 unset NFQWS_VER
 grep -q "^[^#]*[-][-]lua-desync" "$STRATEGY_FILE" && NFQWS_VER=2
+[ "$1" = "start2" ] || [ "$1" = "restart2" ] && NFQWS_VER=2
 
 [ -x "${NFQWS_BIN}${NFQWS_VER}" ] && NFQWS_BIN="${NFQWS_BIN}${NFQWS_VER}"
 [ -x "$NFQWS_BIN_OPT${NFQWS_VER}" ] && NFQWS_BIN="$NFQWS_BIN_OPT${NFQWS_VER}"
 [ -x "$NFQWS_BIN_GIT${NFQWS_VER}" ] && NFQWS_BIN="$NFQWS_BIN_GIT${NFQWS_VER}"
 
 case "$1" in
-    start)
+    start|start2)
         start_service
     ;;
 
@@ -465,7 +490,7 @@ case "$1" in
         status_service
     ;;
 
-    restart)
+    restart|restart2)
         stop_service
         start_service
     ;;
@@ -483,14 +508,18 @@ case "$1" in
     ;;
 
     download|download-nfqws)
-        download_nfqws "$2"
+        download_nfqws "" "$2"
+    ;;
+
+    download2|download-nfqws2)
+        download_nfqws "2" "$2"
     ;;
 
     download-list)
         download_list
     ;;
 
-    *)  echo "Usage: $0 {start [strategy_file]|stop|restart [strategy_file]|download [version_nfqws]|download-list|status}"
+    *)  echo "Usage: $0 {start{2} [strategy_file]|stop|restart{2} [strategy_file]|download{2} [version_nfqws]|download-list|status}"
 esac
 
 [ -s "$POST_SCRIPT" -a -x "$POST_SCRIPT" ] && . "$POST_SCRIPT"

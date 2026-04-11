@@ -1,27 +1,28 @@
-SRC_NAME=strongswan-5.9.2
+SRC_NAME=strongswan-5.9.14
 SRC_URL=https://download.strongswan.org/$(SRC_NAME).tar.bz2
 
 CFLAGS += -ffunction-sections -fdata-sections
-LDFLAGS += -Wl,--gc-sections,-L$(STAGEDIR)/lib,-rpath-link=$(THISDIR)/$(SRC_NAME)/src/libtls/.libs -lcrypto
-
-THISDIR = $(shell pwd)
+CFLAGS += $(if $(CONFIG_IPV6),-DCONFIG_IPV6,)
+LDFLAGS += -Wl,--gc-sections,-L$(STAGEDIR)/lib,-rpath-link=../../src/libtls/.libs -lcrypto
 
 all: download_test extract_test config_test
 	$(MAKE) -j$(HOST_NCPU) -C $(SRC_NAME)
-	$(MAKE) -C $(SRC_NAME) install-strip DESTDIR=$(THISDIR)/install
+	$(MAKE) -C $(SRC_NAME) install DESTDIR=$(STAGEDIR)
 
 download_test:
-	( if [ ! -f $(THISDIR)/$(SRC_NAME).tar.bz2 ]; then \
-		wget -t5 -T20 --no-check-certificate -O $(SRC_NAME).tar.bz2 $(SRC_URL) || rm -f $(SRC_NAME).tar.bz2; \
+	( if [ ! -f $(SRC_NAME).tar.bz2 ]; then \
+		wget -t5 -T20 --no-check-certificate -O $(SRC_NAME).tar.bz2 $(SRC_URL) \
+			|| rm -f $(SRC_NAME).tar.bz2; \
 	fi )
 
 extract_test:
-	( if [ ! -d $(THISDIR)/$(SRC_NAME) ]; then \
+	( if [ ! -d $(SRC_NAME) ]; then \
 		tar xjf $(SRC_NAME).tar.bz2; \
+		cat patches/*.patch | patch -d $(SRC_NAME) -r - -N -p1; \
 	fi )
 
 config_test:
-	( if [ -f $(THISDIR)/config_done ]; then \
+	( if [ -f config_done ]; then \
 		echo "the same configuration"; \
 	else \
 		make configure && touch config_done; \
@@ -69,22 +70,18 @@ configure:
 		--enable-systime-fix \
 		--enable-monolithic \
 		--with-resolv-conf=/etc/resolv.conf \
-		--with-user=admin \
 		--host=$(HOST_TARGET) \
 		--build=$(HOST_BUILD) ; \
 	)
 
 clean:
+	if [ -f $(SRC_NAME)/Makefile ] ; then \
+		$(MAKE) -C $(SRC_NAME) clean ; \
+	fi ;
 	rm -f config_done
-	rm -rf $(THISDIR)/install
-	rm -rf $(THISDIR)/$(SRC_NAME)
 
 romfs:
-	mkdir -p $(INSTALLDIR)/usr/lib/ipsec
-	mkdir -p $(INSTALLDIR)/usr/libexec/ipsec
-	cp -fP $(THISDIR)/install/usr/lib/ipsec/*.so.0* $(ROMFSDIR)/usr/lib/ipsec
-	$(ROMFSINST) $(THISDIR)/install/usr/sbin/ipsec /usr/sbin/ipsec
-	$(ROMFSINST) $(THISDIR)/install/usr/libexec/ipsec/charon /usr/libexec/ipsec/charon
-	$(ROMFSINST) $(THISDIR)/install/usr/libexec/ipsec/starter /usr/libexec/ipsec/starter
-	$(ROMFSINST) $(THISDIR)/install/usr/libexec/ipsec/stroke /usr/libexec/ipsec/stroke
-	$(ROMFSINST) $(THISDIR)/install/usr/libexec/ipsec/_updown /usr/libexec/ipsec/_updown
+	$(ROMFSINST) -x $(STAGEDIR)/usr/sbin/ipsec /usr/sbin/ipsec
+	$(ROMFSINST) -d $(STAGEDIR)/usr/libexec/ipsec /usr/libexec/ipsec
+	mkdir -p $(ROMFSDIR)/usr/lib/ipsec
+	cp -fP $(STAGEDIR)/usr/lib/ipsec/*.so* $(ROMFSDIR)/usr/lib/ipsec

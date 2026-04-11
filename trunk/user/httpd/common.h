@@ -96,11 +96,13 @@ typedef u_int8_t u8;
 #define EVM_UPDATE_TOR			(1ULL << 51)
 #define EVM_RELOAD_TOR			(1ULL << 52)
 
+#define EVM_RELOAD_FIREWALL		(1ULL << 60)
 #define EVM_RESTART_REBOOT		(1ULL << 62)
 #define EVM_BLOCK_UNSAFE		(1ULL << 63) /* special case */
 
 
 #define EVT_RESTART_FIREWALL		1
+#define EVT_RELOAD_FIREWALL		1
 #define EVT_RESTART_DHCPD		1
 #define EVT_RESTART_RADV		1
 #define EVT_RESTART_DDNS		1

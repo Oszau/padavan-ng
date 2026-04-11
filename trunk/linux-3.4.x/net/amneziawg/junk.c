@@ -237,8 +237,14 @@ void jp_tag_free(struct jp_tag* tag) {
 }
 
 void jp_spec_free(struct jp_spec *spec) {
+    kfree(spec->desc);
+    spec->desc = NULL;
     kfree(spec->pkt);
+    spec->pkt = NULL;
     kfree(spec->mods);
+    spec->mods = NULL;
+    spec->pkt_size = 0;
+    spec->mods_size = 0;
 }
 
 int jp_spec_setup(struct jp_spec *spec) {
@@ -249,12 +255,19 @@ int jp_spec_setup(struct jp_spec *spec) {
     char* buf;
     LIST_HEAD(head);
 
-    mutex_init(&spec->lock);
-
-    if (spec->desc == NULL)
-        return 0;
-
     mutex_lock(&spec->lock);
+
+    kfree(spec->pkt);
+    kfree(spec->mods);
+    spec->pkt = NULL;
+    spec->mods = NULL;
+    spec->pkt_size = 0;
+    spec->mods_size = 0;
+
+    if (spec->desc == NULL) {
+        mutex_unlock(&spec->lock);
+        return 0;
+    }
 
     buf = kstrdup(spec->desc, GFP_KERNEL);
     if (!buf) {
@@ -280,11 +293,6 @@ int jp_spec_setup(struct jp_spec *spec) {
         err = -EINVAL;
         goto error;
     }
-
-    kfree(spec->pkt);
-    kfree(spec->mods);
-    spec->pkt_size = 0;
-    spec->mods_size = 0;
 
     spec->pkt = kzalloc(pkt_size, GFP_KERNEL);
     spec->mods = kzalloc(mods_size * sizeof(*spec->mods), GFP_KERNEL);

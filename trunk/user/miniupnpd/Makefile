@@ -1,6 +1,6 @@
 # http://miniupnp.free.fr
 
-SRC_NAME = miniupnpd-2.3.9
+SRC_NAME = miniupnpd-2.3.10
 SRC_URL = http://miniupnp.free.fr/files/$(SRC_NAME).tar.gz
 
 all: download_test extract_test config_test

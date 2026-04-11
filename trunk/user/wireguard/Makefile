@@ -35,10 +35,12 @@ config_test:
 	fi )
 
 clean:
-	if [ -f $(SRC_NAME)/Makefile ] ; then \
-		$(MAKE) -C $(SRC_NAME)/src clean ; \
-	fi ; \
-	rm config_done
+	( for i in `ls -d */`; do \
+		if [ -f $$i/src/Makefile ]; then \
+			$(MAKE) -C $$i/src clean; \
+		fi \
+	done )
+	rm -f config_done
 
 romfs:
 	$(ROMFSINST) $(SRC_NAME)/src/wg /usr/sbin/wg

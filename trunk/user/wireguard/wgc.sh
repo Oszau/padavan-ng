@@ -27,7 +27,7 @@ PEER_PORT="$(nvram get vpnc_wg_peer_port)"
 PEER_ENDPOINT="$(nvram get vpnc_wg_peer_endpoint)"
 PEER_KEEPALIVE="$(nvram get vpnc_wg_peer_keepalive)"
 [ -n "$PEER_KEEPALIVE" ] || PEER_KEEPALIVE=25
-PEER_ALLOWEDIPS="$(nvram get vpnc_wg_peer_allowedips | tr -d ' ')"
+PEER_ALLOWEDIPS="$(nvram get vpnc_wg_peer_allowedips | tr -s ',' '\n')"
 POST_SCRIPT="/etc/storage/vpnc_post_script.sh"
 
 REMOTE_NETWORK_LIST="/etc/storage/vpnc_remote_network.list"
@@ -111,16 +111,14 @@ setconf_wg()
 {
     is_started || return 1
 
-    if ! ip addr show $IF_NAME | grep -q "inet6"; then
-        PEER_ALLOWEDIPS=$(echo "$PEER_ALLOWEDIPS" | tr -s ',' '\n' | grep -v ':' | tr -s '\n' ',' | sed 's/,$//')
-    fi
+    local allowed_ipv6
+    ip addr show $IF_NAME | grep -q "inet6" && allowed_ipv6=", ::/0"
 
-    local awg
     if [ "$MODULE" = "amneziawg" ]; then
         cps()
         {
             local i nv
-            for i in jc jmin jmax i1 i2 i3 i4 i5; do
+            for i in jc jmin jmax i1 i2 i3 i4 i5 h1 h2 h3 h4 s1 s2 s3 s4; do
                 nv=$(nvram get vpnc_awg_$i | tr -d '\n\r')
                 [ -n "$nv" ] && echo "$i = $nv"
             done
@@ -143,24 +141,18 @@ $awg
 PublicKey = $PEER_PUBLIC
 Endpoint = ${PEER_ENDPOINT}:${PEER_PORT}
 PersistentKeepalive = $PEER_KEEPALIVE
-AllowedIPs = $PEER_ALLOWEDIPS
+AllowedIPs = 0.0.0.0/0$allowed_ipv6
 EOF
     [ "$IF_PRESHARED" ] && echo "PresharedKey = $IF_PRESHARED" >> "/tmp/${IF_NAME}.conf.$$"
 
-    # increase the priority of ipv4
-    echo "precedence ::ffff:0:0/96  100" > /etc/gai.conf
-
     log_try_connect
     local res=$($WG setconf $IF_NAME "/tmp/${IF_NAME}.conf.$$" 2>&1)
-
-    rm -f /etc/gai.conf
     rm -f "/tmp/${IF_NAME}.conf.$$"
 
     [ "$1" = "reconnect" ] && return
 
     if ! echo $res | grep -q "error"; then
-        log "configuration $IF_NAME applied successfully"
-        $WG show $IF_NAME | grep -A 5 "peer:" | grep -v "transfer" | while read i; do
+        $WG show $IF_NAME | grep -A 5 "peer:" | grep -E "peer|endpoint" | while read i; do
             log "$i"
         done
         send_ping
@@ -310,6 +302,7 @@ check_connected()
     fi
 
     [ "$((now - lh))" -gt 15 ] && send_ping
+    [ "$((now - lh))" -gt "$TIMEOUT_OFFLINE" ] && return 1
 
     nvram settmp wg_latest_handshakes_t=$lh
 
@@ -504,6 +497,13 @@ ipset_create()
     for name in $(bogon_networks); do
         ipset -q add $VPN_EXCLUDE_IPSET $name
     done
+
+    echo "$PEER_ALLOWEDIPS" | grep -qv "/0" \
+    && log "adding additional AllowedIPs to ipset '$VPN_REMOTE_IPSET'"
+
+    for name in $PEER_ALLOWEDIPS; do
+        ipset -q add $VPN_REMOTE_IPSET "$name"
+    done
 }
 
 bogon_networks()
@@ -513,7 +513,7 @@ bogon_networks()
         192.0.0.0/24 192.0.2.0/24 198.51.100.0/24
         203.0.113.0/24 224.0.0.0/4 240.0.0.0/4
         $(nvram get vpns_vnet)/24
-        $(nvram get lan_ipaddr)/$(nvram get lan_netmask)"
+        $(nvram get lan_ipaddr)/24"
 }
 
 ipt_set_rules()
@@ -569,7 +569,7 @@ stop_fw()
     ipt_remove_rule(){ while iptables -t $1 -C $2 2>/dev/null; do iptables -t $1 -D $2; done }
     ipt_remove_chain(){ iptables -t $1 -F $2 2>/dev/null && iptables -t $1 -X $2 2>/dev/null; }
 
-    ipt_remove_rule "mangle" "PREROUTING -s $(nvram get lan_ipaddr)/$(nvram get lan_netmask) -j vpnc_wireguard"
+    ipt_remove_rule "mangle" "PREROUTING -s $(nvram get lan_ipaddr)/24 -j vpnc_wireguard"
     ipt_remove_rule "mangle" "PREROUTING -s $(nvram get vpns_vnet)/24 -j vpnc_wireguard"
 
     ipt_remove_chain "mangle" "vpnc_wireguard"
@@ -587,7 +587,7 @@ start_fw()
 :vpnc_wireguard - [0:0]
 :vpnc_wireguard_remote - [0:0]
 :vpnc_wireguard_mark - [0:0]
--A PREROUTING -s $(nvram get lan_ipaddr)/$(nvram get lan_netmask) -j vpnc_wireguard
+-A PREROUTING -s $(nvram get lan_ipaddr)/24 -j vpnc_wireguard
 -A PREROUTING -s $(nvram get vpns_vnet)/24 -j vpnc_wireguard
 -A vpnc_wireguard -p udp --dport 53 -j RETURN
 -A vpnc_wireguard -p tcp --dport 53 -j RETURN

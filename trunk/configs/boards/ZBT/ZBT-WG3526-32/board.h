@@ -1,0 +1,1 @@
+../ZBT-WG3526/board.h

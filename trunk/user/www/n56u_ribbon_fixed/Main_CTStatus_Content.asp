@@ -17,7 +17,7 @@
 <script>
 function initial(){
 	show_banner(1);
-	show_menu(5,10,5);
+	show_menu(5,11,5);
 	show_footer();
 }
 </script>

@@ -21,7 +21,7 @@ var $j = jQuery.noConflict();
 
 function initial(){
 	show_banner(1);
-	show_menu(5,7,6);
+	show_menu(5,8,5);
 	show_footer();
 
 	if (!login_safe()){
@@ -124,7 +124,7 @@ function checkEnter(e){
                                         </tr>
                                         <tr>
                                             <td colspan="3" style="border-top: 0 none">
-                                                <textarea class="span12" id="console_area" style="line-height: 1em; font-family: 'Courier New', Courier, mono; font-size:13px;" rows="32" wrap="off" readonly="1"><% nvram_dump("syscmd.log","syscmd.sh"); %></textarea>
+                                                <textarea class="span12" id="console_area" style="line-height: 1.4em; font-family: 'Courier New', Courier, mono; font-size:12px; resize: vertical;" rows="24" wrap="off" readonly="1"><% nvram_dump("syscmd.log","syscmd.sh"); %></textarea>
                                             </td>
                                         </tr>
                                     </table>

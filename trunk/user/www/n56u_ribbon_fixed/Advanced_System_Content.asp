@@ -34,7 +34,7 @@ $j(document).ready(function() {
 
 function initial(){
 	show_banner(1);
-	show_menu(5,7,1);
+	show_menu(5,8,1);
 	show_footer();
 
 	if(document.form.computer_name2.value != "")

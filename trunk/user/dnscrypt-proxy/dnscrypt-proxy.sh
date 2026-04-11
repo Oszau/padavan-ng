@@ -3,18 +3,20 @@
 DNSCRYPT_BIN="/usr/sbin/dnscrypt-proxy"
 PID_FILE="/var/run/dnscrypt-proxy.pid"
 
-resolver=$(nvram get dnscrypt_resolver)
-localipaddr=$(nvram get dnscrypt_ipaddr)
-localport=$(nvram get dnscrypt_port)
-options=$(nvram get dnscrypt_options)
+LISTEN_ADDR="127.0.0.1"
+LISTEN_PORT="$(nvram get dnscrypt_listen_port)"
+
+# 0: standalone; 1: with dnsmasq
+DNSCRYPT_MODE="$(nvram get dnscrypt_mode)"
+
+# 0: 127.0.0.1; 1: lan_ipaddr; 2: 0.0.0.0
+LISTEN_MODE="$(nvram get dnscrypt_listen_mode)"
 
 log()
 {
     [ -n "$*" ] || return
     echo "$@"
-    local pid
-    [ -f "$PID_FILE" ] && pid="[$(cat "$PID_FILE" 2>/dev/null)]"
-    logger -t "dnscrypt-proxy$pid" "$@"
+    logger -t "dnscrypt-proxy" "$@"
 }
 
 error()
@@ -30,14 +32,30 @@ func_start()
         return
     fi
 
-    [ "$1" ] && resolver="$1"
+    case "$LISTEN_MODE" in
+        1) LISTEN_ADDR="$(nvram get lan_ipaddr_t)" ;;
+        2) LISTEN_ADDR="0.0.0.0" ;;
+    esac
 
-    $DNSCRYPT_BIN -R $resolver -a $localipaddr:$localport -p $PID_FILE -u dnscrypt -d $options
-    if pgrep -f "$DNSCRYPT_BIN -R" 2>&1 >/dev/null; then
-        log "started, version 1.9.5, resolver \"$resolver\", listening on $localipaddr:$localport"
-    fi
+    start_proxy()
+    {
+        [ "$2" ] || return
 
-    [ ! -f "$PID_FILE" ] && error "failed to start, resolver \"$resolver\""
+        local res=$($DNSCRYPT_BIN -R $2 -a $LISTEN_ADDR:$1 -u nobody -d -e 4096 -m 3 2>&1)
+        if pgrep -f "$DNSCRYPT_BIN -R $2 " 2>&1 >/dev/null; then
+            [ ! -f "$PID_FILE" ] && log "started, version 1.9.5"
+            log "resolver $2, listening on $LISTEN_ADDR:$1"
+            touch "$PID_FILE"
+        else
+            log "resolver $2 failed to start: $(echo "$res" | sed -n 's/.*\[ERROR\] //p')"
+        fi
+    }
+
+    for i in 0 1 2 3; do
+        start_proxy $(($LISTEN_PORT+$i)) "$(nvram get dnscrypt_resolver$i)"
+    done
+
+    [ ! -f "$PID_FILE" ] && error "failed to start"
 }
 
 func_stop()
@@ -48,7 +66,7 @@ func_stop()
 
 case "$1" in
     start)
-        func_start $2
+        func_start
     ;;
 
     stop)
@@ -57,11 +75,11 @@ case "$1" in
 
     restart)
         func_stop
-        func_start $2
+        func_start
     ;;
 
     *)
-        echo "Usage: $0 {start|stop|restart [resolver_name]}"
+        echo "Usage: $0 {start|stop|restart}"
         exit 1
     ;;
 esac

@@ -29,6 +29,11 @@ $j(document).ready(function() {
 	init_itoggle('lan_dhcpd_x');
 	init_itoggle('dhcp_static_x', change_dhcp_static_enabled);
 	init_itoggle('dhcp_static_arp');
+	init_itoggle('dhcp_all_servers');
+	init_itoggle('dhcp_strict_order');
+	init_itoggle('dhcp_filter_aaaa');
+	init_itoggle('force_redirect_dns');
+	init_itoggle('dns_ipv4_priority');
 });
 
 </script>
@@ -65,6 +70,7 @@ function initial(){
 		showhide_div('row_dservers', 0);
 		showhide_div('row_dipset', 0);
 		showhide_div('row_hosts', 0);
+		showhide_div('row_dns_settings', 0);
 	}
 	if(!found_support_wpad()){
 		showhide_div('row_wpad', 0);
@@ -84,6 +90,8 @@ function initial(){
 	if (!support_ipv6()){
 		document.form.dhcp_verbose.remove(2);
 		document.form.dhcp_verbose.remove(2);
+		showhide_div('row_dhcp_filter_aaaa', 0);
+		showhide_div('row_dns_ipv4_priority', 0);
 	}
 
 	load_body();
@@ -124,6 +132,9 @@ function validForm(){
 		return false;
 
 	if(!validate_range(document.form.dhcp_lease, 120, 604800))
+		return false;
+
+	if(!validate_range(document.form.dhcp_cache_size, 0, 10000))
 		return false;
 
 	var lan_addr = document.form.lan_ipaddr.value;
@@ -456,7 +467,7 @@ function changeBgColor(obj, num){
                                             <th><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this,5,5);"><#LANHostConfig_LeaseTime_itemname#></a></th>
                                             <td>
                                                 <input type="text" maxlength="6" size="6" name="dhcp_lease" class="input" value="<% nvram_get_x("", "dhcp_lease"); %>" onKeyPress="return is_number(this,event);">
-                                                &nbsp;<span style="color:#888;">[120..604800]</span>
+                                                &nbsp;<span style="color:#888;">[ 120..604800 ]</span>
                                             </td>
                                         </tr>
                                         <tr>
@@ -494,6 +505,89 @@ function changeBgColor(obj, num){
                                             <td style="padding-bottom: 0px;">
                                                 <input type="text" maxlength="15" class="input" size="15" name="dhcp_wins_x" value="<% nvram_get_x("", "dhcp_wins_x"); %>" onkeypress="return is_ipaddr(this,event);" />
                                             </td>
+                                        </tr>
+                                    </table>
+
+                                    <table id="row_dns_settings" width="100%" align="center" cellpadding="4" cellspacing="0" class="table">
+                                        <tr>
+                                            <th colspan="2" style="background-color: #E3E3E3"><#LANHostConfig_x_LDNSServer2_sectionname#></th>
+                                        </tr>
+                                        <tr>
+                                            <th><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this,5,12);"><#LANHostConfig_CacheSize_itemname#></a></th>
+                                            <td>
+                                                <input type="text" maxlength="6" size="6" name="dhcp_cache_size" class="input" value="<% nvram_get_x("", "dhcp_cache_size"); %>" onKeyPress="return is_number(this,event);">
+                                                &nbsp;<span style="color:#888;">[ 0..10000 ]</span>
+                                            </td>
+                                        </tr>
+                                        <tr id="row_dhcp_all_servers">
+                                            <th><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this,5,13);"><#LANHostConfig_DHCPAllservers_itemname#></a></th>
+                                            <td>
+                                                <div class="main_itoggle">
+                                                    <div id="dhcp_all_servers_on_of">
+                                                        <input type="checkbox" id="dhcp_all_servers_fake" <% nvram_match_x("", "dhcp_all_servers", "1", "value=1 checked"); %><% nvram_match_x("", "dhcp_all_servers", "0", "value=0"); %>>
+                                                    </div>
+                                                </div>
+                                                <div style="position: absolute; margin-left: -10000px;">
+                                                    <input type="radio" value="1" name="dhcp_all_servers" id="dhcp_all_servers_1" <% nvram_match_x("", "dhcp_all_servers", "1", "checked"); %> /><#checkbox_Yes#>
+                                                    <input type="radio" value="0" name="dhcp_all_servers" id="dhcp_all_servers_0" <% nvram_match_x("", "dhcp_all_servers", "0", "checked"); %> /><#checkbox_No#>
+                                                </div>
+                                           </td>
+                                        </tr>
+                                        <tr id="row_dhcp_strict_order">
+                                            <th><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this,5,14);"><#LANHostConfig_DHCPStrictorder_itemname#></a></th>
+                                            <td>
+                                                <div class="main_itoggle">
+                                                    <div id="dhcp_strict_order_on_of">
+                                                        <input type="checkbox" id="dhcp_strict_order_fake" <% nvram_match_x("", "dhcp_strict_order", "1", "value=1 checked"); %><% nvram_match_x("", "dhcp_strict_order", "0", "value=0"); %>>
+                                                    </div>
+                                                </div>
+                                                <div style="position: absolute; margin-left: -10000px;">
+                                                    <input type="radio" value="1" name="dhcp_strict_order" id="dhcp_strict_order_1" <% nvram_match_x("", "dhcp_strict_order", "1", "checked"); %> /><#checkbox_Yes#>
+                                                    <input type="radio" value="0" name="dhcp_strict_order" id="dhcp_strict_order_0" <% nvram_match_x("", "dhcp_strict_order", "0", "checked"); %> /><#checkbox_No#>
+                                                </div>
+                                           </td>
+                                        </tr>
+                                        <tr id="row_dhcp_filter_aaaa">
+                                            <th><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this,5,15);"><#LANHostConfig_DHCPFilterAAAA_itemname#></a></th>
+                                            <td>
+                                                <div class="main_itoggle">
+                                                    <div id="dhcp_filter_aaaa_on_of">
+                                                        <input type="checkbox" id="dhcp_filter_aaaa_fake" <% nvram_match_x("", "dhcp_filter_aaaa", "1", "value=1 checked"); %><% nvram_match_x("", "dhcp_filter_aaaa", "0", "value=0"); %>>
+                                                    </div>
+                                                </div>
+                                                <div style="position: absolute; margin-left: -10000px;">
+                                                    <input type="radio" value="1" name="dhcp_filter_aaaa" id="dhcp_filter_aaaa_1" <% nvram_match_x("", "dhcp_filter_aaaa", "1", "checked"); %> /><#checkbox_Yes#>
+                                                    <input type="radio" value="0" name="dhcp_filter_aaaa" id="dhcp_filter_aaaa_0" <% nvram_match_x("", "dhcp_filter_aaaa", "0", "checked"); %> /><#checkbox_No#>
+                                                </div>
+                                           </td>
+                                        </tr>
+                                        <tr id="row_dns_ipv4_priority">
+                                            <th><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this,5,16);"><#LANHostConfig_DNSIPV4Priority_itemname#></a></th>
+                                            <td>
+                                                <div class="main_itoggle">
+                                                    <div id="dns_ipv4_priority_on_of">
+                                                        <input type="checkbox" id="dns_ipv4_priority_fake" <% nvram_match_x("", "dns_ipv4_priority", "1", "value=1 checked"); %><% nvram_match_x("", "dns_ipv4_priority", "0", "value=0"); %>>
+                                                    </div>
+                                                </div>
+                                                <div style="position: absolute; margin-left: -10000px;">
+                                                    <input type="radio" value="1" name="dns_ipv4_priority" id="dns_ipv4_priority_1" <% nvram_match_x("", "dns_ipv4_priority", "1", "checked"); %>><#checkbox_Yes#>
+                                                    <input type="radio" value="0" name="dns_ipv4_priority" id="dns_ipv4_priority_0" <% nvram_match_x("", "dns_ipv4_priority", "0", "checked"); %>><#checkbox_No#>
+                                                </div>
+                                           </td>
+                                        </tr>
+                                        <tr id="row_force_redirect_dns">
+                                            <th style="padding-bottom: 0"><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this,5,17);"><#LANHostConfig_ForceDNS_itemname#></a></th>
+                                            <td style="padding-bottom: 0">
+                                                <div class="main_itoggle">
+                                                    <div id="force_redirect_dns_on_of">
+                                                        <input type="checkbox" id="force_redirect_dns_fake" <% nvram_match_x("", "force_redirect_dns", "1", "value=1 checked"); %><% nvram_match_x("", "force_redirect_dns", "0", "value=0"); %>>
+                                                    </div>
+                                                </div>
+                                                <div style="position: absolute; margin-left: -10000px;">
+                                                    <input type="radio" value="1" name="force_redirect_dns" id="force_redirect_dns_1" <% nvram_match_x("", "force_redirect_dns", "1", "checked"); %>><#checkbox_Yes#>
+                                                    <input type="radio" value="0" name="force_redirect_dns" id="force_redirect_dns_0" <% nvram_match_x("", "force_redirect_dns", "0", "checked"); %>><#checkbox_No#>
+                                                </div>
+                                           </td>
                                         </tr>
                                     </table>
 

@@ -293,7 +293,7 @@ void stop_doh(void)
 
 int start_doh(void)
 {
-	if (nvram_get_int("doh_enable") == 1)
+	if (!get_ap_mode() && nvram_get_int("doh_enable") == 1)
 		return eval("/usr/bin/doh_proxy.sh", "start");
 
 	return 0;
@@ -323,7 +323,7 @@ void stop_stubby(void)
 
 int start_stubby(void)
 {
-	if (nvram_get_int("stubby_enable") == 1)
+	if (!get_ap_mode() && nvram_get_int("stubby_enable") == 1)
 		return eval("/usr/bin/stubby.sh", "start");
 
 	return 0;
@@ -350,7 +350,7 @@ void stop_zapret(void){
 }
 
 void start_zapret(void){
-	if (nvram_get_int("zapret_enable") == 1)
+	if (!get_ap_mode() && nvram_get_int("zapret_enable") == 1)
 		eval("/usr/bin/zapret.sh", "start");
 }
 
@@ -360,7 +360,7 @@ void restart_zapret(void){
 }
 
 void reload_zapret(void){
-	if (nvram_get_int("zapret_enable") == 1)
+	if (!get_ap_mode() && nvram_get_int("zapret_enable") == 1)
 		eval("/usr/bin/zapret.sh", "reload");
 }
 #endif
@@ -386,27 +386,21 @@ stop_tor(void)
 void
 start_tor(void)
 {
-	int tor_mode = nvram_get_int("tor_enable");
-
-	if (tor_mode == 1)
+	if (!get_ap_mode() && nvram_get_int("tor_enable") == 1)
 		eval("/usr/bin/tor.sh", "start");
 }
 
 void
 reload_tor(void)
 {
-	int tor_mode = nvram_get_int("tor_enable");
-
-	if (tor_mode == 1)
+	if (!get_ap_mode() && nvram_get_int("tor_enable") == 1)
 		eval("/usr/bin/tor.sh", "reload");
 }
 
 void
 update_tor(void)
 {
-	int tor_mode = nvram_get_int("tor_enable");
-
-	if (tor_mode == 1)
+	if (!get_ap_mode() && nvram_get_int("tor_enable") == 1)
 		eval("/usr/bin/tor.sh", "update");
 }
 
@@ -438,9 +432,7 @@ stop_privoxy(void)
 void
 start_privoxy(void)
 {
-	int privoxy_mode = nvram_get_int("privoxy_enable");
-
-	if (privoxy_mode == 1)
+	if (!get_ap_mode() && nvram_get_int("privoxy_enable") == 1)
 		eval("/usr/bin/privoxy.sh", "start");
 }
 
@@ -472,24 +464,15 @@ stop_dnscrypt(void)
 void
 start_dnscrypt(void)
 {
-	if (nvram_get_int("dnscrypt_enable") == 1)
+	if (!get_ap_mode() && nvram_get_int("dnscrypt_enable") == 1)
 		eval("/usr/bin/dnscrypt-proxy.sh", "start");
 }
 
 void
 restart_dnscrypt(void)
 {
-	int is_run_before = is_dnscrypt_run();
-	int is_run_after;
-
 	stop_dnscrypt();
 	start_dnscrypt();
-
-	is_run_after = is_dnscrypt_run();
-
-	/* add-remove iptables rules for DNS forwarding when switching-on-off DNSCrypt-Proxy control in WebUI */
-	if ((is_run_after != is_run_before) && nvram_match("dnscrypt_force_dns", "1"))
-		restart_firewall();
 }
 #endif
 
@@ -678,23 +661,29 @@ start_services_once(int is_ap_mode)
 #if defined(APP_SSHD)
 	start_sshd();
 #endif
-#if defined(APP_DOH)
-	start_doh();
-#endif
-#if defined(APP_STUBBY)
-	start_stubby();
-#endif
-#if defined(APP_PRIVOXY)
-	start_privoxy();
-#endif
-#if defined(APP_DNSCRYPT)
-	start_dnscrypt();
-#endif
 	start_vpn_server();
 	start_watchdog();
 	start_infosvr();
 
 	if (!is_ap_mode) {
+#if defined(APP_ZAPRET)
+		start_zapret();
+#endif
+#if defined(APP_DOH)
+		start_doh();
+#endif
+#if defined(APP_STUBBY)
+		start_stubby();
+#endif
+#if defined(APP_PRIVOXY)
+		start_privoxy();
+#endif
+#if defined(APP_DNSCRYPT)
+		start_dnscrypt();
+#endif
+#if defined(APP_TOR)
+		start_tor();
+#endif
 		if (!is_upnp_run())
 			start_upnp();
 		
@@ -713,12 +702,6 @@ start_services_once(int is_ap_mode)
 	start_crond();
 	start_networkmap(1);
 	start_rstats();
-#if defined(APP_ZAPRET)
-	start_zapret();
-#endif
-#if defined(APP_TOR)
-	start_tor();
-#endif
 	return 0;
 }
 

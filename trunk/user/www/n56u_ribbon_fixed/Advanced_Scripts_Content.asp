@@ -21,7 +21,7 @@
 
 function initial(){
 	show_banner(1);
-	show_menu(5,8,2);
+	show_menu(5,9,2);
 	show_footer();
 
 	if (!login_safe())

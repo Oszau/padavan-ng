@@ -79,7 +79,7 @@ config STATIC_TOOLCHAIN
 config SHOW_CT_VERSION
     bool
     prompt "Add crosstool-NG version to --version output"
-    default y
+    default ""
     help
       If yes, the crosstool-NG version will be included in the output of
       gcc --version, and also in binutils, glibc, gdb and gdbserver.

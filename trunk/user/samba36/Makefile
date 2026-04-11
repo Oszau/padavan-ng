@@ -3,7 +3,6 @@
 SRC_NAME := samba-3.6.25
 SRC_DIR := $(SRC_NAME)/source3
 SRC_URL := https://download.samba.org/pub/samba/stable/$(SRC_NAME).tar.gz
-THISDIR := $(shell pwd)
 
 SMBCFLAGS = -Wall -D__location__=\\\"\\\" -ffunction-sections -fdata-sections -fvisibility=hidden $(CFLAGS)
 SMBLDFLAGS = -Wl,--gc-sections $(LDFLAGS)
@@ -28,10 +27,7 @@ download_test:
 extract_test:
 	( if [ ! -d $(SRC_NAME) ]; then \
 		tar zxf $(SRC_NAME).tar.gz; \
-		[ ! -d $(THISDIR)/patches ] || \
-		find $(THISDIR)/patches -type f -name '*.patch' -print0 \
-			| sort -z \
-			| xargs -r -t -0 -n 1 patch -d $(SRC_NAME) -p1 -i; \
+		cat patches/*.patch | patch -d $(SRC_NAME) -r - -N -p1; \
 	fi )
 
 config_test:
@@ -60,6 +56,7 @@ configure:
 	samba_cv_USE_SETRESUID=yes \
 	samba_cv_have_setreuid=yes \
 	samba_cv_have_setresuid=yes \
+	$(if $(CONFIG_IPV6),libreplace_cv_HAVE_IPV6=yes,libreplace_cv_HAVE_IPV6=no) \
 	ac_cv_header_zlib_h=no \
 	samba_cv_zlib_1_2_3=no \
 	ac_cv_path_PYTHON="" \
@@ -133,14 +130,14 @@ distclean: clean
 
 romfs:
 ifeq ($(CONFIG_FIRMWARE_INCLUDE_SMBD36),y)
-	$(ROMFSINST) $(THISDIR)/$(SRC_DIR)/bin/samba_multicall /sbin/samba_multicall
+	$(ROMFSINST) $(SRC_DIR)/bin/samba_multicall /sbin/samba_multicall
 	$(ROMFSINST) -s samba_multicall /sbin/smbd
 	$(ROMFSINST) -s samba_multicall /sbin/nmbd
 	$(ROMFSINST) -s /sbin/samba_multicall /bin/smbpasswd
 	mkdir -p $(ROMFSDIR)/usr/share/samba
-	cp -fP $(THISDIR)/$(SRC_NAME)/codepages/*.dat $(ROMFSDIR)/usr/share/samba
+	cp -fP $(SRC_NAME)/codepages/*.dat $(ROMFSDIR)/usr/share/samba
 else
 ifeq ($(CONFIG_FIRMWARE_INCLUDE_WINS),y)
-	$(ROMFSINST) $(THISDIR)/$(SRC_DIR)/bin/nmbd /sbin/nmbd
+	$(ROMFSINST) $(SRC_DIR)/bin/nmbd /sbin/nmbd
 endif
 endif

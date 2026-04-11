@@ -1,0 +1,63 @@
+--- ZeroTierOne-1.16.0.orig/ext/inja/inja.hpp
++++ ZeroTierOne-1.16.0/ext/inja/inja.hpp
+@@ -2456,7 +2456,7 @@
+     case Op::Round: {
+       const auto args = get_arguments<2>(node);
+       const int precision = args[1]->get<int>();
+-      const double result = std::round(args[0]->get<double>() * std::pow(10.0, precision)) / std::pow(10.0, precision);
++      const double result = ::round(args[0]->get<double>() * std::pow(10.0, precision)) / std::pow(10.0, precision);
+       if (precision == 0) {
+         make_result(int(result));
+       } else {
+--- ZeroTierOne-1.16.0.orig/one.cpp
++++ ZeroTierOne-1.16.0/one.cpp
+@@ -2380,7 +2380,7 @@
+ 		dropPrivileges(argv[0], homeDir);
+ #endif
+ 
+-	std::string pidPath(homeDir + ZT_PATH_SEPARATOR_S + ZT_PID_PATH);
++	std::string pidPath(std::string("/var/run") + ZT_PATH_SEPARATOR_S + ZT_PID_PATH);
+ 	{
+ 		// Write .pid file to home folder
+ 		FILE* pf = fopen(pidPath.c_str(), "w");
+--- ZeroTierOne-1.16.0.orig/osdep/LinuxEthernetTap.cpp
++++ ZeroTierOne-1.16.0/osdep/LinuxEthernetTap.cpp
+@@ -254,11 +254,13 @@
+ 
+ 				ifr.ifr_ifru.ifru_hwaddr.sa_family = ARPHRD_ETHER;
+ 				_mac.copyTo(ifr.ifr_ifru.ifru_hwaddr.sa_data, 6);
++/*
+ 				if (ioctl(sock, SIOCSIFHWADDR, (void*)&ifr) < 0) {
+ 					::close(sock);
+ 					printf("WARNING: ioctl() failed setting up Linux tap device (set MAC)\n");
+ 					return;
+ 				}
++*/
+ 
+ 				usleep(100000);
+ 
+@@ -286,11 +288,13 @@
+ 				if (! isOldLinuxKernel()) {
+ 					ifr.ifr_ifru.ifru_hwaddr.sa_family = ARPHRD_ETHER;
+ 					_mac.copyTo(ifr.ifr_ifru.ifru_hwaddr.sa_data, 6);
++/*
+ 					if (ioctl(sock, SIOCSIFHWADDR, (void*)&ifr) < 0) {
+ 						::close(sock);
+ 						printf("WARNING: ioctl() failed setting up Linux tap device (set MAC)\n");
+ 						return;
+ 					}
++*/
+ 
+ 					ifr.ifr_ifru.ifru_mtu = (int)_mtu;
+ 					if (ioctl(sock, SIOCSIFMTU, (void*)&ifr) < 0) {
+--- ZeroTierOne-1.16.0.orig/osdep/OSUtils.cpp
++++ ZeroTierOne-1.16.0/osdep/OSUtils.cpp
+@@ -454,7 +454,7 @@
+ 	return std::string("/var/db/zerotier-one");
+ #else
+ 	// Use /var/lib for Linux and other *nix
+-	return std::string("/var/lib/zerotier-one");
++	return std::string("/etc/storage/zerotier-one");
+ #endif
+ 
+ #endif
