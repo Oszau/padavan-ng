@@ -33,6 +33,7 @@
 #define RCN_RESTART_VPNSVR		"restart_vpn_server"
 #define RCN_REAPPLY_VPNCLI		"reapply_vpn_client"
 #define RCN_RESTART_VPNCLI		"restart_vpn_client"
+#define RCN_START_VPNCLI		"start_vpn_client"
 #define RCN_RESTART_WIFI2		"restart_wifi_rt"
 #define RCN_RESTART_WIFI5		"restart_wifi_wl"
 #define RCN_RESTART_SWITCH_CFG		"restart_switch_config"
@@ -87,8 +88,8 @@
 #define MAX_COVERS			16
 
 typedef struct {
-        const char *name;
-        const char *covers[MAX_COVERS];
+	const char *name;
+	const char *covers[MAX_COVERS];
 } marker_rule_t;
 
 /*
@@ -97,6 +98,8 @@ typedef struct {
  */
 static const marker_rule_t marker_rules[] = {
 	{ RCN_RESTART_DHCPD, { RCN_RESTART_DNS, NULL } },
+	{ RCN_RESTART_NETFILTER, { RCN_RESTART_FIREWALL, RCN_RELOAD_FIREWALL, NULL } },
+	{ RCN_RESTART_FIREWALL, { RCN_RELOAD_FIREWALL, NULL } },
 	{ NULL, { NULL } }
 };
 

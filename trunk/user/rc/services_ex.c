@@ -974,7 +974,7 @@ restart_upnp(void)
 	stop_upnp();
 
 	/* restart_firewall call update_upnp */
-	restart_firewall();
+	notify_rc(RCN_RELOAD_FIREWALL);
 }
 
 ///////////////////////////////////////////////////////////////////////

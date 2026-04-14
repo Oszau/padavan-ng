@@ -38,7 +38,6 @@ $j(document).ready(function() {
 
 <% login_state_hook(); %>
 <% openssl_util_hook(); %>
-<% net_iface_list(); %>
 
 function initial(){
 	show_banner(1);

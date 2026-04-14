@@ -170,7 +170,7 @@ void
 control_ftp_fw(int is_run_before)
 {
 	if (!is_run_before && is_ftp_run() && nvram_match("ftpd_wopen", "1") && nvram_match("fw_enable_x", "1"))
-		restart_firewall();
+		notify_rc(RCN_RELOAD_FIREWALL);
 }
 
 void
@@ -1110,7 +1110,7 @@ void restart_torrent(void)
 	is_run_after = is_torrent_run();
 
 	if ((is_run_after != is_run_before) && nvram_match("fw_enable_x", "1"))
-		restart_firewall();
+		notify_rc(RCN_RELOAD_FIREWALL);
 }
 #endif
 
@@ -1175,7 +1175,7 @@ void restart_aria(void)
 	is_run_after = is_aria_run();
 
 	if ((is_run_after != is_run_before) && nvram_match("fw_enable_x", "1"))
-		restart_firewall();
+		notify_rc(RCN_RELOAD_FIREWALL);
 }
 #endif
 
@@ -1363,7 +1363,7 @@ stop_stor_apps(void)
 #endif
 
 	if (need_restart_fw && nvram_match("fw_enable_x", "1"))
-		restart_firewall();
+		notify_rc(RCN_RELOAD_FIREWALL);
 }
 
 void
@@ -1398,7 +1398,7 @@ start_stor_apps(void)
 #endif
 
 	if (need_restart_fw && nvram_match("fw_enable_x", "1"))
-		restart_firewall();
+		notify_rc(RCN_RELOAD_FIREWALL);
 }
 
 static void

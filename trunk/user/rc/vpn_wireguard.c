@@ -49,6 +49,7 @@ is_enabled_wireguard_client(void)
 int
 start_wireguard_client(void)
 {
+    nvram_set_temp("wg_log_reduce_t", "");
     int ret = eval("/usr/bin/wgc.sh", "start");
     if (ret == 0)
     {

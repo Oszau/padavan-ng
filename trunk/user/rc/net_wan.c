@@ -1360,7 +1360,7 @@ wan_up(char *wan_ifname, int unit, int is_static)
 	notify_watchdog_time();
 
 	/* deferred start static VPN client */
-	notify_rc("start_vpn_client");
+	notify_rc(RCN_START_VPNCLI);
 
 	/* start gateway ARP checker (for IPoE Auto) */
 	if (!modem_unit_id && wan_proto == IPV4_WAN_PROTO_IPOE_DHCP) {

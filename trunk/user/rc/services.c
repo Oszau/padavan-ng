@@ -229,7 +229,7 @@ restart_sshd(void)
 	is_run_after = is_sshd_run();
 
 	if ((is_run_after != is_run_before) && nvram_match("sshd_wopen", "1") && nvram_match("fw_enable_x", "1"))
-		restart_firewall();
+		notify_rc(RCN_RELOAD_FIREWALL);
 }
 #endif
 
@@ -538,7 +538,7 @@ start_httpd(int restart_fw)
 	nvram_set_int_temp("httpd_started", 1);
 
 	if (restart_fw && restart_fw_need && nvram_match("fw_enable_x", "1"))
-		restart_firewall();
+		notify_rc(RCN_RELOAD_FIREWALL);
 }
 
 void

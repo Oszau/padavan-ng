@@ -205,14 +205,20 @@ function validForm(){
 			return false;
 
 		if (found_app_awg()) {
-			if(!validate_range(document.form.vpnc_awg_jc, 0, 10))
+			if(!validate_range(document.form.vpnc_awg_jc, 0, 128)) {
+				$("spoiler_vpnc_amnezia_junk").style.display = "";
 				return false;
+			}
 
-			if(!validate_range(document.form.vpnc_awg_jmin, 0, 1024))
+			if(!validate_range(document.form.vpnc_awg_jmin, 0, 1024)) {
+				$("spoiler_vpnc_amnezia_junk").style.display = "";
 				return false;
+			}
 
-			if(!validate_range(document.form.vpnc_awg_jmax, parseInt(document.form.vpnc_awg_jmin.value), 1024))
+			if(!validate_range(document.form.vpnc_awg_jmax, parseInt(document.form.vpnc_awg_jmin.value), 1024)) {
+				$("spoiler_vpnc_amnezia_junk").style.display = "";
 				return false;
+			}
 		}
 	}
 	else if (mode == "2") {
@@ -1174,14 +1180,14 @@ function vpnc_access_control() {
                                 </tr>
                                 <tr>
                                     <td colspan="2" style="padding-left: 0px; padding-right: 0px">
-                                        <a href="javascript:spoiler_toggle('spoiler_vpnc_amnezia_junk')"><span style="padding-left: 8px"><#AmneziaWG_JunkPackets#>:</span> <i style="scale: 75%;" class="icon-chevron-down"></i></a>
+                                        <a href="javascript:spoiler_toggle('spoiler_vpnc_amnezia_junk')"><span style="padding-left: 8px"><#AmneziaWG_JunkPackets#> (Jc, Jmin, Jmax):</span> <i style="scale: 75%;" class="icon-chevron-down"></i></a>
                                         <table width="100%" id="spoiler_vpnc_amnezia_junk" style="display: none; border: 0px">
 
                                             <tr>
                                                 <th style="border: 0px" width="50%">Jc, <#AmneziaWG_Jc#>:</th>
                                                 <td style="border: 0px">
                                                     <input name="vpnc_awg_jc" value="<% nvram_get_x("", "vpnc_awg_jc"); %>">
-                                                    &nbsp;<span style="color:#888;">[ 0..10 ]</span>
+                                                    &nbsp;<span style="color:#888;">[ 0..128 ]</span>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -1203,7 +1209,7 @@ function vpnc_access_control() {
                                 </tr>
                                 <tr>
                                     <td colspan="2" style="padding-left: 0px; padding-right: 0px">
-                                        <a href="javascript:spoiler_toggle('spoiler_vpnc_amnezia_headers')"><span style="padding-left: 8px"><#AmneziaWG_HeadersMod#>:</span> <i style="scale: 75%;" class="icon-chevron-down"></i></a>
+                                        <a href="javascript:spoiler_toggle('spoiler_vpnc_amnezia_headers')"><span style="padding-left: 8px"><#AmneziaWG_HeadersMod#> (H1-H4, S1-S4):</span> <i style="scale: 75%;" class="icon-chevron-down"></i></a>
                                         <table width="100%" id="spoiler_vpnc_amnezia_headers" style="display: none; border: 0px">
 
                                             <tr>
@@ -1264,7 +1270,7 @@ function vpnc_access_control() {
 
                                 <tr>
                                     <td colspan="2" style="padding: 0px; padding-top: 8px">
-                                        <a href="javascript:spoiler_toggle('spoiler_vpnc_amnezia_i1')"><span style="padding-left: 8px"><#AmneziaWG_ObfuscationProto#>:</span> <i style="scale: 75%;" class="icon-chevron-down"></i></a>
+                                        <a href="javascript:spoiler_toggle('spoiler_vpnc_amnezia_i1')"><span style="padding-left: 8px"><#AmneziaWG_ObfuscationProto#> (I1-I5):</span> <i style="scale: 75%;" class="icon-chevron-down"></i></a>
                                         <table width="100%" id="spoiler_vpnc_amnezia_i1" style="display: none; border: 0px;">
                                             <tr>
                                                 <td colspan="2" style="border: 0px">
@@ -1274,19 +1280,19 @@ function vpnc_access_control() {
                                             <tr>
                                                 <th width="50%"><#AmneziaWG_Obfuscation#> 2:</th>
                                                 <td>
-                                                    <input type="text" name="vpnc_awg_i2" class="input" maxlength="256" size="32" value="<% nvram_get_x("", "vpnc_awg_i2"); %>" onKeyPress="return is_string(this,event);"/>
+                                                    <input type="text" name="vpnc_awg_i2" class="input" maxlength="4096" size="32" value="<% nvram_get_x("", "vpnc_awg_i2"); %>" onKeyPress="return is_string(this,event);"/>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <th><#AmneziaWG_Obfuscation#> 3:</th>
                                                 <td>
-                                                    <input type="text" name="vpnc_awg_i3" class="input" maxlength="256" size="32" value="<% nvram_get_x("", "vpnc_awg_i3"); %>" onKeyPress="return is_string(this,event);"/>
+                                                    <input type="text" name="vpnc_awg_i3" class="input" maxlength="4096" size="32" value="<% nvram_get_x("", "vpnc_awg_i3"); %>" onKeyPress="return is_string(this,event);"/>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <th><#AmneziaWG_Obfuscation#> 4:</th>
                                                 <td>
-                                                    <input type="text" name="vpnc_awg_i4" class="input" maxlength="256" size="32" value="<% nvram_get_x("", "vpnc_awg_i4"); %>" onKeyPress="return is_string(this,event);"/>
+                                                    <input type="text" name="vpnc_awg_i4" class="input" maxlength="4096" size="32" value="<% nvram_get_x("", "vpnc_awg_i4"); %>" onKeyPress="return is_string(this,event);"/>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -1325,7 +1331,7 @@ function vpnc_access_control() {
                                     <td colspan="2">
                                         <a href="javascript:spoiler_toggle('spoiler_dipset')"><span><#CustomConf#> "dnsmasq.ipset"</span> <i style="scale: 75%;" class="icon-chevron-down"></i></a>
                                         <div id="spoiler_dipset" style="display:none;">
-                                            <textarea rows="16" wrap="off" spellcheck="false" maxlength="16384" class="span12" name="dnsmasq.dnsmasq.ipset" style="resize: vertical; font-family:'Courier New'; font-size:12px;"><% nvram_dump("dnsmasq.dnsmasq.ipset",""); %></textarea>
+                                            <textarea rows="16" wrap="off" spellcheck="false" maxlength="32768" class="span12" name="dnsmasq.dnsmasq.ipset" style="resize: vertical; font-family:'Courier New'; font-size:12px;"><% nvram_dump("dnsmasq.dnsmasq.ipset",""); %></textarea>
                                         </div>
                                     </td>
                                 </tr>
@@ -1342,7 +1348,7 @@ function vpnc_access_control() {
                                     <td colspan="2" style="padding-bottom: 0px;">
                                         <a href="javascript:spoiler_toggle('spoiler_vpnc_exclude_network')"><span><#VPNC_ExcludeList#>:</span> <i style="scale: 75%;" class="icon-chevron-down"></i></a>
                                         <div id="spoiler_vpnc_exclude_network" style="display: none">
-                                            <textarea rows="16" wrap="off" spellcheck="false" maxlength="16384" class="span12" name="scripts.vpnc_exclude_network.list" style="font-family:'Courier New'; font-size:12px; resize:vertical; margin-bottom: 0px"><% nvram_dump("scripts.vpnc_exclude_network.list",""); %></textarea>
+                                            <textarea rows="16" wrap="off" spellcheck="false" maxlength="32768" class="span12" name="scripts.vpnc_exclude_network.list" style="font-family:'Courier New'; font-size:12px; resize:vertical; margin-bottom: 0px"><% nvram_dump("scripts.vpnc_exclude_network.list",""); %></textarea>
                                         </div>
                                     </td>
                                 </tr>

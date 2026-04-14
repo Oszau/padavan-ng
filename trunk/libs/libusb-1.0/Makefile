@@ -36,7 +36,6 @@ configure:
 		--disable-static \
 		--disable-log \
 		--disable-udev \
-		--disable-timerfd \
 		--disable-examples-build \
 		--disable-tests-build \
 		--host=$(HOST_TARGET) \

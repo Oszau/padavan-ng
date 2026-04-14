@@ -107,9 +107,22 @@ wg_setdns()
     update_resolvconf
 }
 
+check_host_available()
+{
+    timeout 5 2>&1 nslookup $PEER_ENDPOINT >/dev/null 2>&1
+    if [ $? -ne 0 ]; then
+        [ -z "$(nvram get wg_log_reduce_t)" ] && log "error: host $PEER_ENDPOINT not found"
+        nvram settmp wg_log_reduce_t=1
+        nvram settmp wg_need_restart_t=1
+        return 1
+    fi
+}
+
 setconf_wg()
 {
     is_started || return 1
+
+    check_host_available || exit 1
 
     local allowed_ipv6
     ip addr show $IF_NAME | grep -q "inet6" && allowed_ipv6=", ::/0"
@@ -124,11 +137,6 @@ setconf_wg()
             done
         }
         awg="$(cps)"
-    fi
-
-    timeout 30 2>&1 nslookup $PEER_ENDPOINT >/dev/null 2>&1
-    if [ $? -ne 0 ]; then
-        error "not found host $PEER_ENDPOINT"
     fi
 
     cat > "/tmp/${IF_NAME}.conf.$$" <<EOF
@@ -238,18 +246,18 @@ wg_if_init()
 log_try_connect()
 {
     set_state 2
-    [ -n "$(nvram get wg_try_connect_t)" ] && return
+    [ -n "$(nvram get wg_log_reduce_t)" ] && return
     log "trying connect to $PEER_ENDPOINT"
 }
 
 log_unable_connect()
 {
     set_state 0
-    [ -n "$(nvram get wg_try_connect_t)" ] && return
+    [ -n "$(nvram get wg_log_reduce_t)" ] && return
     log "unable connect to $PEER_ENDPOINT"
 
     # prevent multiple messages
-    nvram settmp wg_try_connect_t=1
+    nvram settmp wg_log_reduce_t=1
 }
 
 log_success_connect()
@@ -257,14 +265,12 @@ log_success_connect()
     [ "$(get_state)" = "1" ] && return
     log "successfully connected"
     set_state 1
-    nvram unset wg_try_connect_t
+    nvram unset wg_log_reduce_t
 }
 
 connect_wg()
 {
     # $1 reconnect
-
-    [ "$(nvram get link_internet)" = 1 ] || return 1
 
     if ! check_connected; then
         setconf_wg $1
@@ -339,16 +345,12 @@ start_wg()
     (
         flock -n 200 || exit 1
 
-        if [ "$(nvram get link_internet)" = 1 ]; then
-            nvram unset wg_need_restart_t
-        else
-            nvram settmp wg_need_restart_t=1
-            exit 1
-        fi
+        set_state 0
+        check_host_available || exit 1
 
         nvram settmp wg_latest_handshakes_t=$(date +%s)
-        nvram unset wg_try_connect_t
-        set_state 0
+        nvram unset wg_need_restart_t
+        nvram unset wg_log_reduce_t
 
         ipset_create
         wg_if_init
