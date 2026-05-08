@@ -72,7 +72,7 @@ static int wl_modified = 0;
 static int rt_modified = 0;
 static u64 restart_needed_bits = 0;
 
-static char post_buf[131072] = {0};
+static char post_buf[262144] = {0};
 static char next_host[128] = {0};
 static char SystemCmd[128] = {0};
 static int  group_del_map[MAX_GROUP_COUNT+2];
@@ -2144,6 +2144,11 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 #else
 	int found_app_doh = 0;
 #endif
+#if defined(APP_QUIC)
+	int found_app_quic = 1;
+#else
+	int found_app_quic = 0;
+#endif
 #if defined(APP_STUBBY)
 	int found_app_stubby = 1;
 #else
@@ -2340,6 +2345,7 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 		"function found_srv_lprd() { return %d;}\n"
 		"function found_app_sshd() { return %d;}\n"
 		"function found_app_doh() { return %d;}\n"
+		"function found_app_quic() { return %d;}\n"
 		"function found_app_stubby() { return %d;}\n"
 		"function found_app_zapret() { return %d;}\n"
 		"function found_app_tor() { return %d;}\n"
@@ -2366,6 +2372,7 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 		found_srv_lprd,
 		found_app_sshd,
 		found_app_doh,
+		found_app_quic,
 		found_app_stubby,
 		found_app_zapret,
 		found_app_tor,

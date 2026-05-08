@@ -591,7 +591,7 @@ function changeBgColor(obj, num){
                                         </tr>
                                     </table>
 
-                                    <table width="100%" align="center" cellpadding="4" cellspacing="0" class="table">
+                                    <table width="100%" align="center" cellpadding="4" cellspacing="0" class="table" style="margin-bottom: 8px;">
                                         <tr>
                                             <th colspan="2" style="background-color: #E3E3E3;"><#t2Advanced#></th>
                                         </tr>
@@ -631,7 +631,7 @@ function changeBgColor(obj, num){
                                             </td>
                                         </tr>
                                         <tr id="row_hosts">
-                                            <td colspan="2" style="padding-bottom: 0px;">
+                                            <td colspan="2">
                                                 <a href="javascript:spoiler_toggle('spoiler_hosts')"><span><#CustomConf#> "hosts"</span></a>
                                                 <div id="spoiler_hosts" style="display:none;">
                                                     <textarea rows="16" wrap="off" spellcheck="false" maxlength="8192" class="span12" name="dnsmasq.hosts" style="resize: vertical; font-family:'Courier New'; font-size:12px;"><% nvram_dump("dnsmasq.hosts",""); %></textarea>
@@ -639,7 +639,7 @@ function changeBgColor(obj, num){
                                             </td>
                                         </tr>
                                         <tr id="row_wpad">
-                                            <td colspan="2" style="padding-bottom: 0px;">
+                                            <td colspan="2">
                                                 <a href="javascript:spoiler_toggle('spoiler_wpad')"><span><#LANHostConfig_WPAD#> "wpad.dat"</span></a>
                                                 <div id="spoiler_wpad" style="display:none;">
                                                     <textarea rows="16" wrap="off" spellcheck="false" maxlength="65536" class="span12" name="scripts.wpad.dat" style="resize: vertical; font-family:'Courier New'; font-size:12px;"><% nvram_dump("scripts.wpad.dat",""); %></textarea>

@@ -523,7 +523,8 @@
 			{"doh_server1", "", NULL, EVM_RESTART_DOH|EVM_RESTART_DHCPD},
 			{"doh_server2", "", NULL, EVM_RESTART_DOH|EVM_RESTART_DHCPD},
 			{"doh_server3", "", NULL, EVM_RESTART_DOH|EVM_RESTART_DHCPD},
-			{"doh_bootstrap_dns", "", NULL, EVM_RESTART_DOH|EVM_RESTART_DHCPD},
+			{"doh_quic", "", NULL, EVM_RESTART_DOH},
+			{"doh_bootstrap_dns", "", NULL, EVM_RESTART_DOH},
 			{"doh_listen_port", "", NULL, EVM_RESTART_DOH|EVM_RESTART_DHCPD},
 			{"doh_listen_mode", "", NULL, EVM_RESTART_DOH|EVM_RESTART_DHCPD},
 			{"doh_mode", "", NULL, EVM_RESTART_DOH|EVM_RESTART_DHCPD},
@@ -565,6 +566,8 @@
 			{"zapretc.auto.list", "File", NULL, FALSE},
 			{"zapretc.user.list", "File", NULL, FALSE},
 			{"zapretc.exclude.list", "File", NULL, FALSE},
+			{"zapretc.ipset.list", "File", NULL, FALSE},
+			{"zapretc.ipset-exclude.list", "File", NULL, FALSE},
 #endif
 #if defined(APP_TOR)
 			{"tor_enable", "", NULL, EVM_RESTART_TOR|EVM_RESTART_DHCPD},

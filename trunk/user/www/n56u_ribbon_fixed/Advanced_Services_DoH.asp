@@ -45,6 +45,12 @@ function initial(){
 		loadJSONToSelect('/doh.json', 'doh_resolver_list');
 		change_doh_enabled();
 	}
+
+	if (found_app_quic()) {
+		showhide_div('row_doh_quic', 1);
+	} else {
+		$j(doh_quic).val('0');
+	}
 }
 
 function applyRule(){
@@ -291,6 +297,15 @@ function resolver_list_update() {
                                             <td>
                                                 <input type="text" maxlength="5" size="15" id="doh_listen_port" name="doh_listen_port" class="input" value="<% nvram_get_x("", "doh_listen_port"); %>" onchange="resolver_list_update()" onkeypress="return is_ipaddrport(this,event);"/>
                                                 &nbsp;<span style="color:#888;">[1024..65530]</span>
+                                            </td>
+                                        </tr>
+                                        <tr id="row_doh_quic" style="display:none">
+                                            <th><#Service_DoH_Quic#>:</th>
+                                            <td>
+                                                <select name="doh_quic" id="doh_quic" class="input">
+                                                    <option value="0" <% nvram_match_x("", "doh_quic", "0","selected"); %>><#CTL_Disabled#></option>
+                                                    <option value="1" <% nvram_match_x("", "doh_quic", "1","selected"); %>><#CTL_Enabled#></option>
+                                                </select>
                                             </td>
                                         </tr>
                                         <tr>

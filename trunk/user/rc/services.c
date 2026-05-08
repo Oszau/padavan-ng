@@ -337,7 +337,7 @@ void restart_stubby(void)
 #endif
 #if defined(APP_ZAPRET)
 int is_zapret_run(void){
-	if (check_if_file_exist("/usr/bin/nfqws"))
+	if (check_if_file_exist("/usr/bin/nfqws") || check_if_file_exist("/usr/bin/nfqws2"))
 	{
 		if (pids("zapret"))
 			return 1;

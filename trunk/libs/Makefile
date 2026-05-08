@@ -192,7 +192,11 @@ dir_$(LIBS_INCLUDE_LIBUSB_0)			+= libusb
 dir_$(LIBS_INCLUDE_LIBUSB_1)			+= libusb-1.0
 dir_y						+= libnfnetlink
 
-dir_$(CONFIG_FIRMWARE_INCLUDE_NFQWS2)		+= libluajit
+ifneq (,$(filter y,$(CONFIG_FIRMWARE_INCLUDE_NFQWS2) \
+                   $(CONFIG_FIRMWARE_INCLUDE_ZAPRET2)))
+dir_y						+= libluajit
+endif
+
 dir_$(CONFIG_FIRMWARE_INCLUDE_QRENCODE)		+= libqrencode
 
 dir_y						+= libmnl

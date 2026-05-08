@@ -141,8 +141,12 @@ dir_y						+= samba3
 endif
 endif
 
-dir_$(CONFIG_FIRMWARE_INCLUDE_NFQWS)		+= nfqws
-dir_$(CONFIG_FIRMWARE_INCLUDE_NFQWS2)		+= nfqws2
+ifneq (,$(filter y,$(CONFIG_FIRMWARE_INCLUDE_ZAPRET) \
+                   $(CONFIG_FIRMWARE_INCLUDE_NFQWS) \
+                   $(CONFIG_FIRMWARE_INCLUDE_NFQWS2) \
+                   $(CONFIG_FIRMWARE_INCLUDE_ZAPRET2)))
+dir_y						+= zapret
+endif
 
 dir_$(SHADOWSOCKS_ENABLED)			+= shadowsocks
 dir_$(CONFIG_FIRMWARE_INCLUDE_ZEROTIER)		+= zerotier

@@ -7,7 +7,7 @@
 #define BOARD_VENDOR_URL        "https://zyxel.ru/"
 #define BOARD_MODEL_URL         "https://zyxel.ru/keenetic-lite"
 #define BOARD_BOOT_TIME		30
-#define BOARD_FLASH_TIME	90
+#define BOARD_FLASH_TIME	100
 #define BOARD_GPIO_BTN_RESET	10
 #define BOARD_GPIO_BTN_WPS	0
 #undef  BOARD_GPIO_BTN_WLTOG

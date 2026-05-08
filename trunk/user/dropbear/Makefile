@@ -1,4 +1,4 @@
-SRC_NAME = dropbear-2025.89
+SRC_NAME = dropbear-2026.90
 SRC_URL = https://matt.ucc.asn.au/dropbear/releases/$(SRC_NAME).tar.bz2
 
 ifeq ($(CONFIG_FIRMWARE_INCLUDE_SFTP),y)

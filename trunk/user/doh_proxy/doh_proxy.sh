@@ -6,6 +6,7 @@ PID_FILE="/var/run/https_dns_proxy.pid"
 LISTEN_ADDR="127.0.0.1"
 LISTEN_PORT="$(nvram get doh_listen_port)"
 BOOTSTRAP_DNS="$(nvram get doh_bootstrap_dns)"
+QUIC="$(nvram get doh_quic)"
 
 # 0: standalone; 1: with dnsmasq
 DOH_MODE="$(nvram get doh_mode)"
@@ -43,8 +44,10 @@ start_service()
         [ "$2" ] || return
         local bootstrap=""
         [ "$BOOTSTRAP_DNS" ] && bootstrap="-b $BOOTSTRAP_DNS"
+        local q=""
+        [ "$QUIC" = 1 ] && q="-q"
 
-        local res=$($DOH_BIN -p $1 -r $2 $bootstrap -a "$LISTEN_ADDR" -u nobody -g nogroup -4 -d)
+        local res=$($DOH_BIN -p $1 -r $2 $bootstrap -a "$LISTEN_ADDR" $q -u nobody -g nogroup -4 -d)
         if pgrep -f "$DOH_BIN -p $1 " 2>&1 >/dev/null; then
             [ ! -f "$PID_FILE" ] && log "started, version $($DOH_BIN -V)"
             log "resolver $2, listening on $LISTEN_ADDR:$1"

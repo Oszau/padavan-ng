@@ -477,6 +477,16 @@ EOF
 		if [ ! -f "$list_vpncr" ] ; then
 			cat > "$list_vpncr" <<EOF
 ### List of remote IP addresses/subnets behind the VPN server
+
+# telegram
+91.105.192.0/23
+91.108.4.0/22
+91.108.8.0/21
+91.108.16.0/21
+91.108.56.0/22
+95.161.64.0/20
+149.154.160.0/20
+185.76.151.0/24
 EOF
 			chmod 644 "$list_vpncr"
 		fi
@@ -579,21 +589,20 @@ ipset=/onion/tor
 ipset=/exit/tor
 
 ### for testing
-# ipset=/myip.ru/unblock,tor
 # ipset=/myip2.ru/unblock
 
 ### youtube
-ipset=/youtube.com/unblock
-ipset=/googlevideo.com/unblock
-ipset=/googleapis.com/unblock
-ipset=/ytimg.com/unblock
-ipset=/ggpht.com/unblock
+# ipset=/youtube.com/unblock
+# ipset=/googlevideo.com/unblock
+# ipset=/googleapis.com/unblock
+# ipset=/ytimg.com/unblock
+# ipset=/ggpht.com/unblock
 
-ipset=/warpgen.net/unblock,tor
-ipset=/chatgpt.com/unblock,tor
-ipset=/cdn.oaistatic.com/unblock,tor
-ipset=/oaiusercontent.com/unblock,tor
-ipset=/openai.com/unblock,tor
+ipset=/warpgen.net/unblock
+ipset=/chatgpt.com/unblock
+ipset=/cdn.oaistatic.com/unblock
+ipset=/oaiusercontent.com/unblock
+ipset=/openai.com/unblock
 ipset=/4pda.to/unblock
 ipset=/4pda.ws/unblock
 ipset=/instagram.com/unblock

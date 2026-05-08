@@ -612,6 +612,7 @@ struct nvram_pair router_defaults[] = {
 	{ "doh_server1", "" },
 	{ "doh_server2", "" },
 	{ "doh_server3", "" },
+	{ "doh_quic", "0" },
 	{ "doh_bootstrap_dns", "1.1.1.1,8.8.8.8,9.9.9.9,208.67.222.222,77.88.8.8" },
 	{ "doh_listen_port", "5053" },
 	{ "doh_listen_mode", "0" },

@@ -1,4 +1,4 @@
-SRC_VER = 2.6.19
+SRC_VER = 2.6.20
 SRC_NAME = openvpn-$(SRC_VER)
 SRC_URL = https://github.com/OpenVPN/openvpn/archive/refs/tags/v$(SRC_VER).tar.gz
 
