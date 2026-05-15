@@ -487,6 +487,10 @@ EOF
 95.161.64.0/20
 149.154.160.0/20
 185.76.151.0/24
+
+# cloudflare
+172.67.64.0/20
+104.26.0.0/20
 EOF
 			chmod 644 "$list_vpncr"
 		fi
@@ -585,8 +589,6 @@ EOF
 		if [ ! -f "$user_dnsmasq_ipset" ] ; then
 			cat > "$user_dnsmasq_ipset" <<EOF
 ### Custom user ipsets for dnsmasq
-ipset=/onion/tor
-ipset=/exit/tor
 
 ### for testing
 # ipset=/myip2.ru/unblock
@@ -598,13 +600,15 @@ ipset=/exit/tor
 # ipset=/ytimg.com/unblock
 # ipset=/ggpht.com/unblock
 
+ipset=/xda-developers.com/unblock
+ipset=/xdaforums.com/unblock
+ipset=/vmware.com/unblock
+ipset=/kinozaltv.life/unblock
 ipset=/warpgen.net/unblock
 ipset=/chatgpt.com/unblock
 ipset=/cdn.oaistatic.com/unblock
 ipset=/oaiusercontent.com/unblock
 ipset=/openai.com/unblock
-ipset=/4pda.to/unblock
-ipset=/4pda.ws/unblock
 ipset=/instagram.com/unblock
 ipset=/ig.me/unblock
 ipset=/cdninstagram.com/unblock

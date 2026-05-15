@@ -1,4 +1,4 @@
-SRC_NAME = dropbear-2026.90
+SRC_NAME = dropbear-2026.91
 SRC_URL = https://matt.ucc.asn.au/dropbear/releases/$(SRC_NAME).tar.bz2
 
 ifeq ($(CONFIG_FIRMWARE_INCLUDE_SFTP),y)
@@ -25,9 +25,7 @@ download_test:
 extract_test:
 	( if [ ! -d $(SRC_NAME) ]; then \
 		tar xjf $(SRC_NAME).tar.bz2; \
-		find "$(shell pwd)"/patches -type f -name '*.patch' -print0 \
-		  | sort -z \
-		  | xargs -r -t -0 -n 1 patch -d $(SRC_NAME) -p1 -i; \
+		cat patches/*.patch | patch -d $(SRC_NAME) -r - -N -p1; \
 	fi )
 
 config_test:
