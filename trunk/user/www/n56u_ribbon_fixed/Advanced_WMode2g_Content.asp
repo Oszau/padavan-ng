@@ -48,8 +48,10 @@ function initial(){
 	change_sta_auth_mode(0);
 
 	document.form.rt_channel.value = document.form.rt_channel_org.value;
-	document.form.rt_sta_ssid.value = decodeURIComponent(document.form.rt_sta_ssid_org.value);
+	document.form.rt_sta_ssid.value = decodeSSID(document.form.rt_sta_ssid_org.value);
 	document.form.rt_sta_wpa_psk.value = decodeURIComponent(document.form.rt_sta_wpa_psk_org.value);
+
+	document.getElementById('ctl_apc_2').addEventListener('input', checkSSID);
 }
 
 function applyRule(){

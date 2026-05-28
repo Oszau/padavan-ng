@@ -70,13 +70,15 @@ function initial(){
 	document.form.wl_radio_time2_x_endhour.value = getTimeRange(document.form.wl_radio_time2_x.value, 2);
 	document.form.wl_radio_time2_x_endmin.value = getTimeRange(document.form.wl_radio_time2_x.value, 3);
 
-	document.form.wl_ssid.value = decodeURIComponent(document.form.wl_ssid2.value);
+	document.form.wl_ssid.value = decodeSSID(document.form.wl_ssid2.value);
 	document.form.wl_wpa_psk.value = decodeURIComponent(document.form.wl_wpa_psk_org.value);
 	document.form.wl_key1.value = decodeURIComponent(document.form.wl_key1_org.value);
 	document.form.wl_key2.value = decodeURIComponent(document.form.wl_key2_org.value);
 	document.form.wl_key3.value = decodeURIComponent(document.form.wl_key3_org.value);
 	document.form.wl_key4.value = decodeURIComponent(document.form.wl_key4_org.value);
 	document.form.wl_phrase_x.value = decodeURIComponent(document.form.wl_phrase_x_org.value);
+
+	document.getElementById('ssid').addEventListener('input', checkSSID);
 
 	if(document.form.wl_wpa_psk.value.length < 1)
 		document.form.wl_wpa_psk.value = "Please type Password";
@@ -374,7 +376,7 @@ function validate_wlphrase(s, v, obj){
                                         </tr>
                                         <tr>
                                             <th width="50%"><a class="help_tooltip" href="javascript: void(0)" onmouseover="openTooltip(this, 0, 1);"><#WLANConfig11b_SSID_itemname#></a></th>
-                                            <td><input type="text" maxlength="32" class="input" size="32" name="wl_ssid" value=""></td>
+                                            <td><input type="text" maxlength="32" class="input" size="32" id="ssid" name="wl_ssid" value=""></td>
                                         </tr>
                                         <tr>
                                             <th><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this, 0, 2);"><#WLANConfig11b_x_BlockBCSSID_itemname#></a></th>

@@ -1306,20 +1306,49 @@ function showhide_div(e, sh) {
         document.layers[e].display = status;
 }
 
-function decodeSSID(s) {
-    var out, len, i;
-    out = "";
-    len = s.length;
-    i = 2;
-
-    if (s[0] == "0" && s[1] == "x") {
-        while(i < len) {
-            out += "%";
-            out += s[i++];
-            out += s[i++];
-        }
-        return decodeURIComponent(out);
+function decodeSSID(hex) {
+    if (!/^0x[0-9A-Fa-f]+$/.test(hex)) {
+        return hex;
     }
 
-    return decodeURIComponent(s);
+    hex = hex.replace(/^0x/i, '');
+    let encoded = '';
+
+    for (let i = 0; i < hex.length; i += 2) {
+        const byte = hex.slice(i, i + 2);
+
+        if (byte.length < 2) break;
+        encoded += '%' + byte;
+    }
+
+    while (encoded.length > 0) {
+        try {
+            return decodeURIComponent(encoded);
+        } catch (e) {
+            const shorter = encoded.replace(/%[0-9A-Fa-f]{2}$/, '');
+
+            if (shorter === encoded)
+                break;
+
+            encoded = shorter;
+        }
+    }
+
+    return '';
+}
+
+function checkSSID(e) {
+    const bytes = new TextEncoder().encode(e.target.value);
+
+    if (bytes.length > 32) {
+        let str = e.target.value;
+
+        while (
+            new TextEncoder().encode(str).length > 32
+        ) {
+            str = str.slice(0, -1);
+        }
+
+        e.target.value = str;
+    }
 }

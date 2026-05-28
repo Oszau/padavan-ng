@@ -1,6 +1,6 @@
 # https://busybox.net
 
-SRC_NAME = busybox-1.37.0
+SRC_NAME = busybox-1.38.0
 SRC_URL = https://busybox.net/downloads/$(SRC_NAME).tar.bz2
 
 CFLAGS += -ffunction-sections -fdata-sections -fvisibility=hidden

@@ -1445,6 +1445,13 @@ ej_wl_auth_list(int eid, webs_t wp, int argc, char **argv)
 	return ret;
 }
 
+void
+copy_field(char *dst, const char *src, int start, int width)
+{
+	memcpy(dst, src + start, width);
+	dst[width] = 0;
+	trim_r(dst);
+}
 
 #define SSURV_LINE_LEN_MIN  (4+33+20+23+9+9+7+3)  /* Channel+SSID+Bssid+Security+Signal+WiressMode+ExtCh+NetworkType */
 #define SSURV_LINE_LEN_MAX   255
@@ -1457,13 +1464,13 @@ ej_wl_scan_xg(const char * net_device, int eid, webs_t wp, int argc, char **argv
 	char data[8192];
 	char ssid_str[128];
 	char site_line[SSURV_LINE_LEN_MAX+1];
-	char site_chnl[4];
-	char site_ssid[34];
-	char site_bssid[24];
+	char site_channel[4];
+	char site_ssid[67];
+	char site_bssid[21];
 	char site_signal[10];
 	struct iwreq wrq;
 	char *sp, *op, *empty;
-	int line_len;
+	int line_len, pos;
 	size_t x0, x_ch, x_ssid, x_bssid, x_signal;
 
 	empty = "[\"\", \"\", \"\", \"\"]";
@@ -1524,20 +1531,29 @@ ej_wl_scan_xg(const char * net_device, int eid, webs_t wp, int argc, char **argv
 				break; // critical error
 
 			memcpy(site_line, sp, line_len);
+			site_line[line_len] = 0;
 
-			memcpy(site_chnl, sp+x_ch, 3);
-			memcpy(site_ssid, sp+x_ssid, 33);
-			memcpy(site_bssid, sp+x_bssid, 20);
-			memcpy(site_signal, sp+x_signal, 9);
+			// Right side skip
+			pos = strlen(site_line) - (3+7+9+9);
 
-			site_line[line_len] = '\0';
-			site_chnl[3] = '\0';
-			site_ssid[33] = '\0';
-			site_bssid[20] = '\0';
-			site_signal[9] = '\0';
+			// Signal
+			copy_field(site_signal, site_line, pos, sizeof(site_signal) - 1);
+
+			// Bssid
+			pos -= 23+20;
+			copy_field(site_bssid, site_line, pos, sizeof(site_bssid) - 1);
+
+			// Left side: Channel + SSID
+			site_line[pos] = 0;
+
+			// Channel first
+			copy_field(site_channel, site_line, 0, sizeof(site_channel) - 1);
+
+			// SSID, ascii (32) or 0xhex (2+64)
+			copy_field(site_ssid, site_line, 4, sizeof(site_ssid) - 1);
 
 			memset(ssid_str, 0, sizeof(ssid_str));
-			char_to_ascii(ssid_str, trim_r(site_ssid));
+			char_to_ascii(ssid_str, site_ssid);
 
 			if (!strlen(ssid_str))
 				strcpy(ssid_str, "???");
@@ -1545,7 +1561,7 @@ ej_wl_scan_xg(const char * net_device, int eid, webs_t wp, int argc, char **argv
 			if (apCount)
 				retval += websWrite(wp, "%s ", ",");
 
-			retval += websWrite(wp, "[\"%s\", \"%s\", \"%s\", \"%s\"]", ssid_str, trim_r(site_bssid), trim_r(site_chnl), trim_r(site_signal));
+			retval += websWrite(wp, "[\"%s\", \"%s\", \"%s\", \"%s\"]", ssid_str, site_bssid, site_channel, site_signal);
 
 //			dbg("%s\n", site_line);
 

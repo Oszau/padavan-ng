@@ -69,8 +69,10 @@ function initial(){
 	document.form.wl_guest_time2_x_endhour.value = getTimeRange(document.form.wl_guest_time2_x.value, 2);
 	document.form.wl_guest_time2_x_endmin.value = getTimeRange(document.form.wl_guest_time2_x.value, 3);
 
-	document.form.wl_guest_ssid.value = decodeURIComponent(document.form.wl_guest_ssid_org.value);
+	document.form.wl_guest_ssid.value = decodeSSID(document.form.wl_guest_ssid_org.value);
 	document.form.wl_guest_wpa_psk.value = decodeURIComponent(document.form.wl_guest_wpa_psk_org.value);
+
+	document.getElementById('guest_ssid').addEventListener('input', checkSSID);
 
 	if (get_ap_mode())
 		$("col_isolate").innerHTML = "<#WIFIGuestIsolate#>";
@@ -344,7 +346,7 @@ function change_guest_auth_mode(mflag) {
                                         </tr>
                                         <tr id="row_guest_5" style="display:none;">
                                             <th><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this, 0, 1);"><#WIFIGuestSSID#></a></th>
-                                            <td><input type="text" maxlength="32" class="input" size="32" name="wl_guest_ssid" value=""/></td>
+                                            <td><input type="text" maxlength="32" class="input" size="32" id="guest_ssid" name="wl_guest_ssid" value=""/></td>
                                         </tr>
                                         <tr id="row_guest_6" style="display:none;">
                                             <th><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this, 0, 2);"><#WLANConfig11b_x_BlockBCSSID_itemname#></a></th>

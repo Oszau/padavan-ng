@@ -44,7 +44,7 @@ function initial(){
 	}
 
 	if(parent.document.rt_form.rt_ssid.value == ""){
-		document.form.rt_ssid.value = decodeURIComponent(document.form.rt_ssid2.value);
+		document.form.rt_ssid.value = decodeSSID(document.form.rt_ssid2.value);
 		document.form.rt_wpa_psk.value = decodeURIComponent(document.form.rt_wpa_psk_org.value);
 		document.form.rt_key1.value = decodeURIComponent(document.form.rt_key1_org.value);
 		document.form.rt_key2.value = decodeURIComponent(document.form.rt_key2_org.value);
@@ -66,6 +66,8 @@ function initial(){
 		document.form.rt_crypto.value = parent.document.rt_form.rt_crypto.value;
 		document.form.rt_wpa_psk.value = parent.document.rt_form.rt_wpa_psk.value;
 	}
+
+	document.getElementById('sta_ssid').addEventListener('input', checkSSID);
 
 	if(document.form.rt_wpa_psk.value.length <= 0)
 		document.form.rt_wpa_psk.value = "Please type Password";
