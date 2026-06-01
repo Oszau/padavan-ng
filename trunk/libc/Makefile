@@ -1,5 +1,9 @@
 # https://downloads.uclibc-ng.org/releases
 
+SRC_VER = 1.0.58
+SRC_NAME = uClibc-ng-$(SRC_VER)
+SRC_URL = https://downloads.uclibc-ng.org/releases/$(SRC_VER)/$(SRC_NAME).tar.xz
+
 .EXPORT_ALL_VARIABLES:
 .PHONY: all romfs clean
 
@@ -17,26 +21,38 @@ include $(ROOTDIR)/include/configedit.mk
 
 DESTDIR=$(ROOTDIR)/stage
 
-LIBC_DIR = uClibc-ng-1.0.57
-
-all:
-	cp -fL $(ROOTDIR)/configs/boards/uclibc-mipsel.config $(LIBC_DIR)/.config
+all: download_test extract_test
+	cp -fL $(ROOTDIR)/configs/boards/uclibc-mipsel.config $(SRC_NAME)/.config
 ifeq ($(CONFIG_IPV6),y)
-	$(call KconfigEnableOption,UCLIBC_HAS_IPV6,$(LIBC_DIR)/.config)
+	$(call KconfigEnableOption,UCLIBC_HAS_IPV6,$(SRC_NAME)/.config)
 else
-	$(call KconfigDisableOption,UCLIBC_HAS_IPV6,$(LIBC_DIR)/.config)
+	$(call KconfigDisableOption,UCLIBC_HAS_IPV6,$(SRC_NAME)/.config)
 endif
 ifneq (,$(filter y,$(CONFIG_MMC_BLOCK) $(CONFIG_BLK_DEV_SD)))
-	$(call KconfigEnableOption,UCLIBC_HAS_LIBICONV,$(LIBC_DIR)/.config)
+	$(call KconfigEnableOption,UCLIBC_HAS_LIBICONV,$(SRC_NAME)/.config)
 else
-	$(call KconfigDisableOption,UCLIBC_HAS_LIBICONV,$(LIBC_DIR)/.config)
+	$(call KconfigDisableOption,UCLIBC_HAS_LIBICONV,$(SRC_NAME)/.config)
 endif
-	$(call KconfigSetOption,UCLIBC_EXTRA_CFLAGS,"$(CPUFLAGS) $(CFLAGS)",$(LIBC_DIR)/.config)
-	$(MAKE) -j$(HOST_NCPU) -C $(LIBC_DIR) oldconfig || exit $$? ; \
-	if [ ! -f $(DESTDIR)/.installed_$(LIBC_DIR) ] ; then \
-		$(MAKE) -C $(LIBC_DIR) PREFIX=$(DESTDIR) DEVEL_PREFIX=/ MULTILIB_DIR=lib install_runtime install_utils && \
-		touch $(DESTDIR)/.installed_$(LIBC_DIR) ; \
+	$(call KconfigSetOption,UCLIBC_EXTRA_CFLAGS,"$(CPUFLAGS) $(CFLAGS)",$(SRC_NAME)/.config)
+	$(MAKE) -j$(HOST_NCPU) -C $(SRC_NAME) oldconfig || exit $$? ; \
+	if [ ! -f $(DESTDIR)/.installed_$(SRC_NAME) ] ; then \
+		$(MAKE) -C $(SRC_NAME) PREFIX=$(DESTDIR) DEVEL_PREFIX=/ MULTILIB_DIR=lib install_runtime install_utils && \
+		touch $(DESTDIR)/.installed_$(SRC_NAME) ; \
 	fi
+
+download_test:
+	( if [ ! -f $(SRC_NAME).tar.xz ]; then \
+		wget -t5 -T20 --no-check-certificate -O $(SRC_NAME).tar.xz $(SRC_URL) \
+			|| rm -f $(SRC_NAME).tar.xz; \
+	fi )
+
+extract_test:
+	( if [ ! -d $(SRC_NAME) ]; then \
+		tar --xz -xf $(SRC_NAME).tar.xz; \
+	fi )
+
+print-%:
+	@echo $($*)
 
 %_only:
 	$(MAKE) -C $(@:_only=)
@@ -57,5 +73,5 @@ romfs:
 	chmod +x $(ROMFSDIR)/lib/libuClibc*.so
 
 clean:
-	rm -f $(DESTDIR)/.installed_$(LIBC_DIR)
-	$(MAKE) -C $(LIBC_DIR) distclean
+	rm -f $(DESTDIR)/.installed_$(SRC_NAME)
+	$(MAKE) -C $(SRC_NAME) distclean

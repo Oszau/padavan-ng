@@ -24,6 +24,12 @@ if [ -d .build ]; then
 	./ct-ng clean
 	rm -rf ${CONFIG_TOOLCHAIN_DIR}
 fi
+if [ -f "../trunk/libc/Makefile" ]; then
+	echo "=================== GET LIBC DIR ======================="
+	make -sC ../trunk/libc download_test extract_test \
+	&& export CONFIG_LIBC_DIR="$(make -sC ../trunk/libc print-SRC_NAME)" \
+	|| exit 1
+fi
 
 (./ct-ng mipsel-linux-uclibc && ./ct-ng build) || exit 1
 
