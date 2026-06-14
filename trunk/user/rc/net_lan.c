@@ -730,6 +730,16 @@ full_restart_lan(void)
 	/* restart dns relay and dhcp server */
 	start_dns_dhcpd(is_ap_mode);
 
+#if defined(APP_DOH)
+	restart_doh();
+#endif
+#if defined(APP_STUBBY)
+	restart_stubby();
+#endif
+#if defined(APP_DNSCRYPT)
+	restart_dnscrypt();
+#endif
+
 	if (!is_ap_mode) {
 		if (is_lan_stp) {
 			br_set_stp(IFNAME_BR, 1);

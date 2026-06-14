@@ -1,6 +1,6 @@
 # https://www.7-zip.org
 
-SRC_VER = 26.00
+SRC_VER = 26.01
 SRC_NAME = 7zip-$(SRC_VER)
 SRC_URL = https://github.com/ip7z/7zip/archive/refs/tags/$(SRC_VER).tar.gz
 
@@ -16,9 +16,6 @@ download_test:
 extract_test:
 	( if [ ! -d $(SRC_NAME) ]; then \
 		tar zxf $(SRC_NAME).tar.gz; \
-		find "$(shell pwd)"/patches -type f -name '*.patch' -print0 \
-		  | sort -z \
-		  | xargs -r -t -0 -n 1 patch -d $(SRC_NAME) -p1 -i; \
 	fi )
 
 clean:

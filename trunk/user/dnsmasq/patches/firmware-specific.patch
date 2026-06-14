@@ -1,5 +1,5 @@
---- dnsmasq-2.92.orig/Makefile
-+++ dnsmasq-2.92/Makefile
+--- a/Makefile
++++ b/Makefile
 @@ -18,15 +18,12 @@
  
  # Variables you may well want to override.
@@ -17,9 +17,9 @@
  RPM_OPT_FLAGS = 
  LIBS          = 
  LUA           = lua
---- dnsmasq-2.92.orig/src/config.h
-+++ dnsmasq-2.92/src/config.h
-@@ -50,7 +50,7 @@
+--- a/src/config.h
++++ b/src/config.h
+@@ -51,7 +51,7 @@
  #define DEFLEASE 3600 /* default DHCPv4 lease time, one hour */
  #define DEFLEASE6 (3600*24) /* default lease time for DHCPv6. One day. */
  #define CHUSER "nobody"
@@ -28,7 +28,7 @@
  #define TFTP_MAX_CONNECTIONS 50 /* max simultaneous connections */
  #define TFTP_MAX_WINDOW 32 /* max window size to negotiate */
  #define TFTP_TRANSFER_TIME 120 /* Abandon TFTP transfers after this long. Two mins. */
-@@ -188,6 +188,7 @@
+@@ -190,6 +190,7 @@
  #define HAVE_IPSET 
  #define HAVE_LOOP
  #define HAVE_DUMPFILE
@@ -36,20 +36,20 @@
  
  /* Build options which require external libraries.
     
---- dnsmasq-2.92.orig/src/rfc2131.c
-+++ dnsmasq-2.92/src/rfc2131.c
-@@ -1918,7 +1918,7 @@
- static void log_packet(char *type, void *addr, unsigned char *ext_mac, 
- 		       int mac_len, char *interface, char *string, char *err, u32 xid)
+--- a/src/rfc2131.c
++++ b/src/rfc2131.c
+@@ -1920,7 +1920,7 @@
  {
+   char *mac = "";
+ 
 -  if (!err && !option_bool(OPT_LOG_OPTS) && option_bool(OPT_QUIET_DHCP))
 +  if (!option_bool(OPT_LOG_OPTS) && option_bool(OPT_QUIET_DHCP))
      return;
    
-   daemon->addrbuff[0] = daemon->namebuff[0] = 0;
---- dnsmasq-2.92.orig/src/rfc3315.c
-+++ dnsmasq-2.92/src/rfc3315.c
-@@ -815,7 +815,7 @@
+   daemon->addrbuff[0] = 0;
+--- a/src/rfc3315.c
++++ b/src/rfc3315.c
+@@ -818,7 +818,7 @@
  	    for (c = state->context; c; c = c->current)
  	      if (!(c->flags & CONTEXT_RA_STATELESS))
  		{
@@ -58,7 +58,7 @@
  		  break;
  		}
  	  }
-@@ -931,7 +931,7 @@
+@@ -934,7 +934,7 @@
  	    put_opt6_short(DHCP6NOADDRS);
  	    put_opt6_string(_("no addresses available"));
  	    end_opt6(o1);
@@ -67,7 +67,7 @@
  	  }
  
  	tagif = add_options(state, 0);
-@@ -1046,9 +1046,6 @@
+@@ -1049,9 +1049,6 @@
  		    message = _("address invalid");
  		  } 
  

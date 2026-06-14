@@ -669,17 +669,8 @@ start_services_once(int is_ap_mode)
 #if defined(APP_ZAPRET)
 		start_zapret();
 #endif
-#if defined(APP_DOH)
-		start_doh();
-#endif
-#if defined(APP_STUBBY)
-		start_stubby();
-#endif
 #if defined(APP_PRIVOXY)
 		start_privoxy();
-#endif
-#if defined(APP_DNSCRYPT)
-		start_dnscrypt();
 #endif
 #if defined(APP_TOR)
 		start_tor();

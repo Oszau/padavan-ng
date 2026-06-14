@@ -109,7 +109,7 @@ wg_setdns()
 
 check_host_available()
 {
-    timeout 3 2>&1 nslookup $PEER_ENDPOINT >/dev/null 2>&1
+    timeout 15 2>&1 nslookup $PEER_ENDPOINT >/dev/null 2>&1
     if [ $? -ne 0 ]; then
         [ -z "$(nvram get wg_log_reduce_t)" ] && log "error: host $PEER_ENDPOINT not found"
         nvram settmp wg_log_reduce_t=1

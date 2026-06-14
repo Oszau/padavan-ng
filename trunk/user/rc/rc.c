@@ -917,6 +917,16 @@ init_router(void)
 	start_wins();
 #endif
 
+#if defined(APP_DOH)
+	start_doh();
+#endif
+#if defined(APP_STUBBY)
+	start_stubby();
+#endif
+#if defined(APP_DNSCRYPT)
+	start_dnscrypt();
+#endif
+
 	if (!is_ap_mode) {
 		ipt_nat_default();
 		ipt_filter_default();
